@@ -140,8 +140,24 @@ const EmptyState = ({ icon, title, sub }) => (
 );
 
 export default function App() {
-  const [matches, setMatches] = useState([]);
-  const [upcoming, setUpcoming] = useState([]);
+  const [matches, setMatches] = useState([
+    { id:'m1', week:1, date:"2026-05-26", p1:"Michael", p2:"Byron",   p3:"Keagan",  p4:"Nathan",  scores:[3,6,6,7,5,7], winner:1 },
+    { id:'m2', week:1, date:"2026-05-26", p1:"John",    p2:"Brandon", p3:"Connor",  p4:"Graeme",  scores:[3,6,3,6,7,5], winner:1 },
+  ]);
+  const [upcoming, setUpcoming] = useState([
+    { id:'u1', week:2, date:"", time:"", p1:"Brandon", p2:"Connor",  p3:"John",    p4:"Darren"  },
+    { id:'u2', week:2, date:"", time:"", p1:"Graeme",  p2:"Byron",   p3:"Keagan",  p4:"Michael" },
+    { id:'u3', week:2, date:"", time:"", p1:"John",    p2:"Michael", p3:"Graeme",  p4:"Keagan"  },
+    { id:'u4', week:3, date:"", time:"", p1:"Brandon", p2:"Darren",  p3:"Connor",  p4:"Byron"   },
+    { id:'u5', week:3, date:"", time:"", p1:"John",    p2:"Graeme",  p3:"Connor",  p4:"John"    },
+    { id:'u6', week:4, date:"", time:"", p1:"Brandon", p2:"Byron",   p3:"Darren",  p4:"Michael" },
+    { id:'u7', week:4, date:"", time:"", p1:"Connor",  p2:"John",    p3:"Darren",  p4:"Connor"  },
+    { id:'u8', week:5, date:"", time:"", p1:"Brandon", p2:"Michael", p3:"Byron",   p4:"Keagan"  },
+    { id:'u9', week:5, date:"", time:"", p1:"Darren",  p2:"Connor",  p3:"Byron",   p4:"Darren"  },
+    { id:'u10',week:6, date:"", time:"", p1:"Brandon", p2:"Keagan",  p3:"Michael", p4:"Graeme"  },
+    { id:'u11',week:6, date:"", time:"", p1:"Byron",   p2:"Darren",  p3:"Keagan",  p4:"John"    },
+    { id:'u12',week:7, date:"", time:"", p1:"Brandon", p2:"Graeme",  p3:"Keagan",  p4:"John"    },
+  ]);
   const [players, setPlayers] = useState(INITIAL_PLAYERS);
   const [isAdmin, setIsAdmin] = useState(false);
   const [view, setView] = useState('standings');
