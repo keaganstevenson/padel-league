@@ -143,6 +143,8 @@ export default function App() {
   const [matches, setMatches] = useState([
     { id:'m1', week:1, date:"2026-05-26", p1:"Michael", p2:"Byron",   p3:"Keagan",  p4:"Nathan",  scores:[3,6,6,7,5,7], winner:1 },
     { id:'m2', week:1, date:"2026-05-26", p1:"John",    p2:"Brandon", p3:"Connor",  p4:"Graeme",  scores:[3,6,3,6,7,5], winner:1 },
+    { id:'m3', week:2, date:"", p1:"Graeme",  p2:"Michael", p3:"Keagan",  p4:"Byron",   scores:[6,7,6,2,7,6], winner:1 },
+    { id:'m4', week:2, date:"", p1:"Brandon", p2:"Connor",  p3:"Darren",  p4:"John",    scores:[6,1,6,3,6,2], winner:1 },
   ]);
   const [upcoming, setUpcoming] = useState([
     { id:'u1', week:2, date:"", time:"", p1:"Brandon", p2:"Connor",  p3:"John",    p4:"Darren"  },
