@@ -144,7 +144,13 @@ export default function App() {
     { id:'m1', week:1, date:"2026-05-26", p1:"Michael", p2:"Byron",   p3:"Keagan",  p4:"Nathan",  scores:[3,6,6,7,5,7], winner:1 },
     { id:'m2', week:1, date:"2026-05-26", p1:"John",    p2:"Brandon", p3:"Connor",  p4:"Graeme",  scores:[3,6,3,6,7,5], winner:1 },
     { id:'m3', week:2, date:"", p1:"Graeme",  p2:"Michael", p3:"Keagan",  p4:"Byron",   scores:[6,7,6,2,7,6], winner:1 },
-    { id:'m4', week:2, date:"", p1:"Brandon", p2:"Connor",  p3:"Darren",  p4:"John",    scores:[6,1,6,3,6,2], winner:1 },
+    { id:'m4', week:2, date:"",           p1:"Brandon", p2:"Connor",  p3:"Darren",  p4:"John",    scores:[6,1,6,3,6,2], winner:1 },
+    { id:'m5', week:3, date:"2026-06-09", p1:"Graeme",  p2:"Michael", p3:"Keagan",  p4:"John",    scores:[6,4,6,7,6,4], winner:1 },
+    { id:'m6', week:3, date:"2026-06-09", p1:"Connor",  p2:"Byron",   p3:"Darren",  p4:"Nathan",  scores:[6,3,3,6,6,1], winner:1 },
+    { id:'m7', week:4, date:"2026-06-16", p1:"Keagan",  p2:"Connor",  p3:"Graeme",  p4:"John",    scores:[6,0,6,4,6,1], winner:1 },
+    { id:'m8', week:4, date:"2026-06-16", p1:"Byron",   p2:"Nathan",  p3:"Michael", p4:"Darren",  scores:[6,7,6,1,6,3], winner:1 },
+    { id:'m9', week:5, date:"2026-06-23", p1:"Keagan",  p2:"Brandon", p3:"Graeme",  p4:"Michael", scores:[6,2,6,4,2,6], winner:1 },
+    { id:'m10',week:5, date:"2026-06-23", p1:"Connor",  p2:"Nathan",  p3:"Byron",   p4:"Darren",  scores:[7,5,6,2,6,1], winner:1 },
   ]);
   const [upcoming, setUpcoming] = useState([
     { id:'u1', week:2, date:"", time:"", p1:"Brandon", p2:"Connor",  p3:"John",    p4:"Darren"  },
