@@ -36,7 +36,7 @@ const ShareIcon = ({ size = 15 }) => (
 );
 
 const ADMIN_PIN = "1234";
-const INITIAL_PLAYERS = ["Brandon","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan","Shaun"];
+const INITIAL_PLAYERS = ["Brandon","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
 
 const C = {
   bg:'#f5f0eb', surface:'#ffffff', border:'#e8e0d8', nav:'#ffffff',
