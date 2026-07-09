@@ -91,6 +91,17 @@ const PLAYER_PHOTOS = {
   Brandon: null, Byron: null, Connor: null, Darren: null,
   Graeme: null, John: null, Keagan: null, Michael: null, Nathan: null,
 };
+const PLAYTOMIC_LINKS = {
+  Brandon: "https://app.playtomic.com/profile/user/3595990?utm_source=app_ios&utm_campaign=share",
+  Darren: "https://app.playtomic.com/profile/user/4033294?utm_campaign=share&utm_source=app_ios",
+  Byron: "https://app.playtomic.com/profile/user/6263685?utm_campaign=share&utm_source=app_ios",
+  Keagan: "https://app.playtomic.com/profile/user/5799405?utm_source=app_ios&utm_campaign=share",
+  Graeme: "https://app.playtomic.com/profile/user/11610652?utm_source=app_ios&utm_campaign=share",
+  John: "https://app.playtomic.com/profile/user/7423258?utm_source=app_ios&utm_campaign=share",
+  Connor: "https://app.playtomic.com/profile/user/9387132?utm_source=app_ios&utm_campaign=share",
+  Nathan: "https://app.playtomic.com/profile/user/6810247?utm_source=app_ios&utm_campaign=share",
+  Michael: "https://app.playtomic.com/profile/user/4203130?utm_source=app_ios&utm_campaign=share",
+};
 const PALETTE = ["#00d4ff","#ffd700","#00e676","#ff5252","#a78bfa","#fb923c","#34d399","#f472b6","#60a5fa"];
 function pColor(n) { const i=ALL_PLAYERS.indexOf(n); return PALETTE[i>=0?i:0]; }
 function initials(n) { return n.slice(0,2).toUpperCase(); }
@@ -731,7 +742,7 @@ export default function App() {
                     <h2 style={{ fontSize:28,fontWeight:900,letterSpacing:"-0.03em",color:col }}>{p}</h2>
                     {dplTeam&&<div style={{ fontSize:12,color:dplTeam.color,fontWeight:700,marginTop:4 }}>{dplTeam.emoji} {dplTeam.name}</div>}
                     <div style={{ display:"flex",gap:8,marginTop:10,flexWrap:"wrap" }}>
-                      <a href="https://www.playtomic.io" target="_blank" rel="noopener noreferrer" style={{ fontSize:11,color:C.accent,background:`${C.accent}11`,border:`1px solid ${C.accent}33`,borderRadius:8,padding:"5px 12px",textDecoration:"none",fontWeight:700 }}>🎾 Playtomic</a>
+                      {PLAYTOMIC_LINKS[p]&&<a href={PLAYTOMIC_LINKS[p]} target="_blank" rel="noopener noreferrer" style={{ fontSize:11,color:C.accent,background:`${C.accent}11`,border:`1px solid ${C.accent}33`,borderRadius:8,padding:"5px 12px",textDecoration:"none",fontWeight:700 }}>🎾 Playtomic</a>}
                       <ShareBtn getText={waPlayer}/>
                     </div>
                   </div>
