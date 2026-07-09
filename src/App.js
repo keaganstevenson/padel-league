@@ -151,6 +151,10 @@ export default function App() {
     { id:'m8', week:4, date:"2026-06-16", p1:"Byron",   p2:"Nathan",  p3:"Michael", p4:"Darren",  scores:[6,7,6,1,6,3], winner:1 },
     { id:'m9', week:5, date:"2026-06-23", p1:"Keagan",  p2:"Brandon", p3:"Graeme",  p4:"Michael", scores:[6,2,6,4,2,6], winner:1 },
     { id:'m10',week:5, date:"2026-06-23", p1:"Connor",  p2:"Nathan",  p3:"Byron",   p4:"Darren",  scores:[7,5,6,2,6,1], winner:1 },
+    { id:'m11',week:6, date:"2026-06-30", p1:"Graeme",  p2:"Nathan",  p3:"Keagan",  p4:"Brandon", scores:[6,2,4,6,6,3], winner:1 },
+    { id:'m12',week:6, date:"2026-06-30", p1:"Connor",  p2:"Darren",  p3:"Byron",   p4:"John",    scores:[4,6,6,4,6,2], winner:1 },
+    { id:'m13',week:7, date:"2026-07-07", p1:"Michael", p2:"Connor",  p3:"Darren",  p4:"Byron",   scores:[6,4,6,3,6,2], winner:1 },
+    { id:'m14',week:7, date:"2026-07-07", p1:"Graeme",  p2:"Nathan",  p3:"Keagan",  p4:"John",    scores:[5,7,3,6,6,3], winner:1 },
   ]);
   const [upcoming, setUpcoming] = useState([
     { id:'u1', week:2, date:"", time:"", p1:"Brandon", p2:"Connor",  p3:"John",    p4:"Darren"  },
