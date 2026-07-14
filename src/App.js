@@ -33,12 +33,10 @@ const SCHEDULE = [
 ];
 
 const UPCOMING_FIXTURES = [
-  { id:"f1", date:"2026-07-14", time:"18:30", venue:"Africa Padel KCC", teams:"Overhead Casualties vs Circumserve" },
-  { id:"f2", date:"2026-07-14", time:"19:30", venue:"Africa Padel KCC", teams:"One Nice Guy vs EFF" },
   { id:"f3", date:"2026-07-21", time:"18:30", venue:"Africa Padel KCC", teams:"Overhead Casualties vs One Nice Guy" },
-  { id:"f4", date:"2026-07-21", time:"19:30", venue:"Africa Padel KCC", teams:"Circumserve vs EFF" },
+  { id:"f4", date:"2026-07-21", time:"18:30", venue:"Africa Padel KCC", teams:"Circumserve vs EFF" },
   { id:"f5", date:"2026-07-28", time:"18:30", venue:"Africa Padel KCC", teams:"Overhead Casualties vs EFF" },
-  { id:"f6", date:"2026-07-28", time:"19:30", venue:"Africa Padel KCC", teams:"Circumserve vs One Nice Guy" },
+  { id:"f6", date:"2026-07-28", time:"18:30", venue:"Africa Padel KCC", teams:"Circumserve vs One Nice Guy" },
 ];
 
 const SEASON1 = [
@@ -202,7 +200,7 @@ export default function App() {
   const [newFixture,setNewFixture]=useState({date:"",time:"",venue:"",teams:""});
   const [showAddFixture,setShowAddFixture]=useState(false);
 
-  const TODAY=new Date("2026-07-10");
+  const TODAY=new Date("2026-07-15");
   const activeFixtures=fixtures.filter(f=>new Date(f.date)>=TODAY);
 
   const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
@@ -334,7 +332,7 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{ display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,minWidth:200 }}>
-                  {[{v:"46",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"9",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
+                  {[{v:"48",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"9",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
                     <div key={s.l} style={{ background:`${s.c}0d`,border:`1px solid ${s.c}22`,borderRadius:14,padding:"16px 12px",textAlign:"center" }}>
                       <div style={{ fontSize:30,fontWeight:900,color:s.c,lineHeight:1 }}>{s.v}</div>
                       <div style={{ fontSize:10,color:`${s.c}99`,fontWeight:800,textTransform:"uppercase",marginTop:4 }}>{s.l}</div>
