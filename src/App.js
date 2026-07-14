@@ -1,11 +1,7 @@
 import { useState, useMemo } from "react";
 
-// Replace these with your direct image links (e.g. https://i.imgur.com/xxxxx.png)
-// Imgur album/gallery links (imgur.com/a/...) won't work directly in <img> tags —
-// open the image on imgur.com, right-click it, and "Copy image address" to get
-// a direct link that starts with https://i.imgur.com/
-const LOGO_SQUARE_URL = "https://i.imgur.com/p6qJIP1.jpeg"; // square logo — shown in the nav bar
-const LOGO_BANNER_URL = "https://i.imgur.com/dUkcrm5.jpeg"; // banner logo — shown in the hero section on Home
+const LOGO_SQUARE_URL = "https://i.imgur.com/p6qJIP1.jpeg";
+const LOGO_BANNER_URL = "https://i.imgur.com/dUkcrm5.jpeg";
 
 const C = {
   bg:"#0a0a0f", card:"#12121a", border:"#1e1e2e", accent:"#00d4ff",
@@ -23,8 +19,8 @@ const TEAMS = [
 
 const SCHEDULE = [
   { round:1, date:"Tue, 14 Jul 2026", matches:[
-    { t1:"t1", t2:"t2", scores:null },
-    { t1:"t3", t2:"t4", scores:null },
+    { t1:"t1", t2:"t2", scores:["6-4","5-7","4-6"], result:[2,1] },
+    { t1:"t4", t2:"t3", scores:["3-6","6-2","6-3"], result:[2,1] },
   ]},
   { round:2, date:"Tue, 21 Jul 2026", matches:[
     { t1:"t1", t2:"t3", scores:null },
@@ -88,27 +84,27 @@ const SEASON2 = [
 
 const ALL_PLAYERS = ["Brandon","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
 const PLAYER_PHOTOS = {
-  Brandon: null, Byron: null, Connor: null, Darren: null,
-  Graeme: null, John: null, Keagan: null, Michael: null, Nathan: null,
+  Brandon:null, Byron:null, Connor:null, Darren:null,
+  Graeme:null, John:null, Keagan:null, Michael:null, Nathan:null,
 };
 const PLAYTOMIC_LINKS = {
-  Brandon: "https://app.playtomic.com/profile/user/3595990?utm_source=app_ios&utm_campaign=share",
-  Darren: "https://app.playtomic.com/profile/user/4033294?utm_campaign=share&utm_source=app_ios",
-  Byron: "https://app.playtomic.com/profile/user/6263685?utm_campaign=share&utm_source=app_ios",
-  Keagan: "https://app.playtomic.com/profile/user/5799405?utm_source=app_ios&utm_campaign=share",
-  Graeme: "https://app.playtomic.com/profile/user/11610652?utm_source=app_ios&utm_campaign=share",
-  John: "https://app.playtomic.com/profile/user/7423258?utm_source=app_ios&utm_campaign=share",
-  Connor: "https://app.playtomic.com/profile/user/9387132?utm_source=app_ios&utm_campaign=share",
-  Nathan: "https://app.playtomic.com/profile/user/6810247?utm_source=app_ios&utm_campaign=share",
-  Michael: "https://app.playtomic.com/profile/user/4203130?utm_source=app_ios&utm_campaign=share",
+  Brandon:"https://app.playtomic.com/profile/user/3595990?utm_source=app_ios&utm_campaign=share",
+  Darren:"https://app.playtomic.com/profile/user/4033294?utm_campaign=share&utm_source=app_ios",
+  Byron:"https://app.playtomic.com/profile/user/6263685?utm_campaign=share&utm_source=app_ios",
+  Keagan:"https://app.playtomic.com/profile/user/5799405?utm_source=app_ios&utm_campaign=share",
+  Graeme:"https://app.playtomic.com/profile/user/11610652?utm_source=app_ios&utm_campaign=share",
+  John:"https://app.playtomic.com/profile/user/7423258?utm_source=app_ios&utm_campaign=share",
+  Connor:"https://app.playtomic.com/profile/user/9387132?utm_source=app_ios&utm_campaign=share",
+  Nathan:"https://app.playtomic.com/profile/user/6810247?utm_source=app_ios&utm_campaign=share",
+  Michael:"https://app.playtomic.com/profile/user/4203130?utm_source=app_ios&utm_campaign=share",
 };
+
 const PALETTE = ["#00d4ff","#ffd700","#00e676","#ff5252","#a78bfa","#fb923c","#34d399","#f472b6","#60a5fa"];
 function pColor(n) { const i=ALL_PLAYERS.indexOf(n); return PALETTE[i>=0?i:0]; }
 function initials(n) { return n.slice(0,2).toUpperCase(); }
 
 function Avatar({ name, size=36, ring=false }) {
-  const c = pColor(name);
-  const photo = PLAYER_PHOTOS[name];
+  const c=pColor(name), photo=PLAYER_PHOTOS[name];
   return photo ? (
     <div style={{ width:size,height:size,borderRadius:"50%",overflow:"hidden",flexShrink:0,border:`2px solid ${c}`,boxShadow:ring?`0 0 12px ${c}44`:"none" }}>
       <img src={photo} alt={name} style={{ width:"100%",height:"100%",objectFit:"cover" }}/>
@@ -120,15 +116,15 @@ function Avatar({ name, size=36, ring=false }) {
   );
 }
 
-const ADMIN_PIN = "1234";
+const ADMIN_PIN="1234";
 
 function calcStats(matches) {
-  const stats = {};
-  ALL_PLAYERS.forEach(p => stats[p]={name:p,w:0,l:0,played:0});
-  matches.forEach(m => {
+  const stats={};
+  ALL_PLAYERS.forEach(p=>stats[p]={name:p,w:0,l:0,played:0});
+  matches.forEach(m=>{
     const w1=m.w===1;
-    [m.p1,m.p2].forEach(p=>{ if(stats[p]){stats[p].played++;if(w1)stats[p].w++;else stats[p].l++;}});
-    [m.p3,m.p4].forEach(p=>{ if(stats[p]){stats[p].played++;if(!w1)stats[p].w++;else stats[p].l++;}});
+    [m.p1,m.p2].forEach(p=>{if(stats[p]){stats[p].played++;if(w1)stats[p].w++;else stats[p].l++;}});
+    [m.p3,m.p4].forEach(p=>{if(stats[p]){stats[p].played++;if(!w1)stats[p].w++;else stats[p].l++;}});
   });
   return Object.values(stats).filter(p=>p.played>0).sort((a,b)=>b.w-a.w||a.l-b.l);
 }
@@ -146,9 +142,9 @@ function calcTeamStandings(schedule) {
   return TEAMS.map(t=>({...t,pts:pts[t.id],sw:sw[t.id],sl:sl[t.id],played:played[t.id]})).sort((a,b)=>b.pts-a.pts||(b.sw-b.sl)-(a.sw-a.sl));
 }
 
-function MatchCard({ m, accent }) {
-  const winners=[m.p1,m.p2], losers=[m.p3,m.p4];
-  const ws=[m.s[0],m.s[2],m.s[4]], ls=[m.s[1],m.s[3],m.s[5]];
+function MatchCard({m,accent}) {
+  const winners=[m.p1,m.p2],losers=[m.p3,m.p4];
+  const ws=[m.s[0],m.s[2],m.s[4]],ls=[m.s[1],m.s[3],m.s[5]];
   return (
     <div style={{ background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden" }}>
       <div style={{ height:3,background:`linear-gradient(90deg,${accent||C.accent},${accent||C.accent}44)` }}/>
@@ -177,10 +173,10 @@ function MatchCard({ m, accent }) {
   );
 }
 
-function ShareBtn({ getText }) {
-  const share = () => {
-    const text = getText();
-    try { navigator.clipboard.writeText(text); } catch(e) {}
+function ShareBtn({getText}) {
+  const share=()=>{
+    const text=getText();
+    try{navigator.clipboard.writeText(text);}catch(e){}
     setTimeout(()=>window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank"),200);
   };
   return (
@@ -192,37 +188,37 @@ function ShareBtn({ getText }) {
 }
 
 export default function App() {
-  const [view, setView] = useState("home");
-  const [selPlayer, setSelPlayer] = useState(null);
-  const [selTeam, setSelTeam] = useState(null);
-  const [adminMode, setAdminMode] = useState(false);
-  const [pinModal, setPinModal] = useState(false);
-  const [pin, setPin] = useState("");
-  const [pinErr, setPinErr] = useState(false);
-  const [schedule, setSchedule] = useState(SCHEDULE);
-  const [fixtures, setFixtures] = useState(UPCOMING_FIXTURES);
-  const [toast, setToast] = useState("");
-  const [inputScores, setInputScores] = useState({});
-  const [newFixture, setNewFixture] = useState({ date:"",time:"",venue:"",teams:"" });
-  const [showAddFixture, setShowAddFixture] = useState(false);
+  const [view,setView]=useState("home");
+  const [selPlayer,setSelPlayer]=useState(null);
+  const [selTeam,setSelTeam]=useState(null);
+  const [adminMode,setAdminMode]=useState(false);
+  const [pinModal,setPinModal]=useState(false);
+  const [pin,setPin]=useState("");
+  const [pinErr,setPinErr]=useState(false);
+  const [schedule,setSchedule]=useState(SCHEDULE);
+  const [fixtures,setFixtures]=useState(UPCOMING_FIXTURES);
+  const [toast,setToast]=useState("");
+  const [inputScores,setInputScores]=useState({});
+  const [newFixture,setNewFixture]=useState({date:"",time:"",venue:"",teams:""});
+  const [showAddFixture,setShowAddFixture]=useState(false);
 
-  const TODAY = new Date("2026-07-09");
-  const activeFixtures = fixtures.filter(f=>new Date(f.date)>=TODAY);
+  const TODAY=new Date("2026-07-10");
+  const activeFixtures=fixtures.filter(f=>new Date(f.date)>=TODAY);
 
-  const showToast = msg => { setToast(msg); setTimeout(()=>setToast(""),2500); };
-  const handlePin = k => {
+  const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
+  const handlePin=k=>{
     if(k==="⌫"){setPin(p=>p.slice(0,-1));return;}
     if(pin.length>=4)return;
-    const next=pin+k; setPin(next);
-    if(next.length===4) setTimeout(()=>{ if(next===ADMIN_PIN){setAdminMode(true);setPinModal(false);setPin("");setPinErr(false);showToast("Admin mode on ✓");}else{setPinErr(true);setPin("");setTimeout(()=>setPinErr(false),800);}},120);
+    const next=pin+k;setPin(next);
+    if(next.length===4)setTimeout(()=>{if(next===ADMIN_PIN){setAdminMode(true);setPinModal(false);setPin("");setPinErr(false);showToast("Admin mode on ✓");}else{setPinErr(true);setPin("");setTimeout(()=>setPinErr(false),800);}},120);
   };
 
-  const standings = useMemo(()=>calcTeamStandings(schedule),[schedule]);
-  const s1stats = useMemo(()=>calcStats(SEASON1),[]);
-  const s2stats = useMemo(()=>calcStats(SEASON2),[]);
+  const standings=useMemo(()=>calcTeamStandings(schedule),[schedule]);
+  const s1stats=useMemo(()=>calcStats(SEASON1),[]);
+  const s2stats=useMemo(()=>calcStats(SEASON2),[]);
 
-  const saveResult = (ri,mi) => {
-    const key=`${ri}-${mi}`, val=inputScores[key]||"";
+  const saveResult=(ri,mi)=>{
+    const key=`${ri}-${mi}`,val=inputScores[key]||"";
     const parts=val.split(",").map(s=>s.trim());
     let s1=0,s2=0;
     const valid=parts.length>=2&&parts.every(p=>{const[a,b]=p.split("-").map(Number);if(isNaN(a)||isNaN(b))return false;if(a>b)s1++;else s2++;return true;});
@@ -231,7 +227,7 @@ export default function App() {
     showToast("Result saved ✓");
   };
 
-  const addFixture = () => {
+  const addFixture=()=>{
     if(!newFixture.date||!newFixture.teams){showToast("Date and teams required");return;}
     setFixtures(prev=>[...prev,{...newFixture,id:`f${Date.now()}`}]);
     setNewFixture({date:"",time:"",venue:"",teams:""});
@@ -239,9 +235,11 @@ export default function App() {
     showToast("Fixture added ✓");
   };
 
-  const getT = id => TEAMS.find(t=>t.id===id);
+  const getT=id=>TEAMS.find(t=>t.id===id);
+  const weekGroups=arr=>[...new Set(arr.map(m=>m.week))].sort((a,b)=>b-a);
+  const cardStyle={background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden"};
 
-  const NAV = [
+  const NAV=[
     {id:"home",label:"Home",icon:"🏠"},
     {id:"upcoming",label:"Upcoming",icon:"📆"},
     {id:"dpl",label:"DPL Season 3",icon:"🏆"},
@@ -251,7 +249,7 @@ export default function App() {
     {id:"teams",label:"Teams",icon:"🛡"},
   ];
 
-  const waS2 = () => {
+  const waS2=()=>{
     let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*Season 2 Standings*\n\n`;
     s2stats.forEach((p,i)=>t+=`${i+1}. ${p.name} — ${p.w}W ${p.l}L\n`);
     const latest=SEASON2.filter(m=>m.week===Math.max(...SEASON2.map(x=>x.week)));
@@ -259,19 +257,16 @@ export default function App() {
     latest.forEach(m=>{const w=[m.p1,m.p2];const s=`${m.s[0]}-${m.s[1]}, ${m.s[2]}-${m.s[3]}, ${m.s[4]}-${m.s[5]}`;t+=`✅ ${w[0]} & ${w[1]} won (${s})\n`;});
     return t;
   };
-  const waS1 = () => {
+  const waS1=()=>{
     let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*Season 1 Final Standings*\n\n`;
     s1stats.forEach((p,i)=>t+=`${i+1}. ${p.name} — ${p.w}W ${p.l}L\n`);
     return t;
   };
-  const waDPL = () => {
+  const waDPL=()=>{
     let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*Season 3 Pool Standings*\n\n`;
     standings.forEach((tm,i)=>t+=`${i+1}. ${tm.name} — ${tm.pts} pts (${tm.sw}-${tm.sl} sets)\n`);
     return t;
   };
-
-  const cardStyle = { background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden" };
-  const weekGroups = arr => [...new Set(arr.map(m=>m.week))].sort((a,b)=>b-a);
 
   return (
     <div style={{ minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','system-ui',sans-serif",paddingBottom:80 }}>
@@ -300,9 +295,9 @@ export default function App() {
       <nav style={{ background:`${C.card}f0`,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:50,backdropFilter:"blur(12px)" }}>
         <div style={{ maxWidth:1000,margin:"0 auto",padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8 }}>
           <div style={{ display:"flex",alignItems:"center",gap:10,flexShrink:0 }}>
-            {LOGO_SQUARE_URL ? (
-              <img src={LOGO_SQUARE_URL} alt="DPL logo" style={{ width:36,height:36,borderRadius:10,objectFit:"cover" }}/>
-            ) : (
+            {LOGO_SQUARE_URL?(
+              <img src={LOGO_SQUARE_URL} alt="DPL" style={{ width:36,height:36,borderRadius:10,objectFit:"cover" }}/>
+            ):(
               <div style={{ width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#00d4ff,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18 }}>🎾</div>
             )}
             <span style={{ fontWeight:900,fontSize:15,letterSpacing:"-0.03em",color:C.accent }}>DPL</span>
@@ -318,17 +313,13 @@ export default function App() {
 
       <main style={{ maxWidth:1000,margin:"0 auto",padding:"20px 16px" }}>
 
-        {/* HOME */}
         {view==="home"&&(
           <div style={{ display:"flex",flexDirection:"column",gap:28 }}>
-            {/* HERO */}
             <div style={{ borderRadius:24,border:`1px solid #00d4ff22`,overflow:"hidden",position:"relative",background:C.card }}>
               <div style={{ position:"absolute",inset:0,background:"radial-gradient(ellipse at 20% 50%, #00d4ff0d 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, #7c3aed0d 0%, transparent 60%)",pointerEvents:"none" }}/>
               <div style={{ padding:"48px 32px",display:"flex",alignItems:"center",gap:32,flexWrap:"wrap" }}>
                 <div style={{ flex:1,minWidth:260 }}>
-                  {LOGO_BANNER_URL&&(
-                    <img src={LOGO_BANNER_URL} alt="Degenerates Padel League banner" style={{ maxWidth:"100%",height:"auto",maxHeight:100,marginBottom:20,display:"block" }}/>
-                  )}
+                  {LOGO_BANNER_URL&&<img src={LOGO_BANNER_URL} alt="DPL" style={{ maxWidth:"100%",height:"auto",maxHeight:100,marginBottom:20,display:"block" }}/>}
                   <div style={{ display:"inline-flex",alignItems:"center",gap:8,background:"#00d4ff11",border:"1px solid #00d4ff33",borderRadius:99,padding:"5px 14px",marginBottom:16 }}>
                     <span style={{ width:7,height:7,borderRadius:"50%",background:C.accent,display:"inline-block",boxShadow:`0 0 8px ${C.accent}` }}/>
                     <span style={{ fontSize:11,fontWeight:800,color:C.accent,textTransform:"uppercase",letterSpacing:"0.1em" }}>Season 3 Underway</span>
@@ -352,27 +343,25 @@ export default function App() {
                 </div>
               </div>
             </div>
-
-            {/* PLAYER GRID */}
             <div>
               <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16 }}>
-                <h3 style={{ fontSize:16,fontWeight:800,color:C.text }}>👥 The Squad</h3>
+                <h3 style={{ fontSize:16,fontWeight:800 }}>👥 The Squad</h3>
                 <button onClick={()=>setView("players")} style={{ fontSize:11,color:C.accent,background:"transparent",border:"none",cursor:"pointer",fontWeight:700,fontFamily:"inherit" }}>View all stats →</button>
               </div>
               <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:12 }}>
                 {ALL_PLAYERS.map(p=>{
-                  const photo=PLAYER_PHOTOS[p], col=pColor(p);
-                  const s1=s1stats.find(x=>x.name===p)||{w:0,l:0}, s2=s2stats.find(x=>x.name===p)||{w:0,l:0};
+                  const photo=PLAYER_PHOTOS[p],col=pColor(p);
+                  const s1=s1stats.find(x=>x.name===p)||{w:0,l:0},s2=s2stats.find(x=>x.name===p)||{w:0,l:0};
                   return (
-                    <div key={p} onClick={()=>{setSelPlayer(p);setView("players");}} style={{ background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden",cursor:"pointer",transition:"border-color 0.2s" }}
+                    <div key={p} onClick={()=>{setSelPlayer(p);setView("players");}} style={{ background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden",cursor:"pointer" }}
                       onMouseEnter={e=>e.currentTarget.style.borderColor=col}
                       onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
                       <div style={{ height:90,background:`${col}11`,display:"flex",alignItems:"center",justifyContent:"center",position:"relative" }}>
-                        {photo ? <img src={photo} alt={p} style={{ width:72,height:72,borderRadius:"50%",objectFit:"cover",border:`3px solid ${col}` }}/> : <Avatar name={p} size={72} ring/>}
+                        {photo?<img src={photo} alt={p} style={{ width:72,height:72,borderRadius:"50%",objectFit:"cover",border:`3px solid ${col}` }}/>:<Avatar name={p} size={72} ring/>}
                         <div style={{ position:"absolute",bottom:0,left:0,right:0,height:24,background:`linear-gradient(transparent,${C.card})` }}/>
                       </div>
                       <div style={{ padding:"10px 12px" }}>
-                        <div style={{ fontWeight:800,fontSize:13,color:C.text,marginBottom:4 }}>{p}</div>
+                        <div style={{ fontWeight:800,fontSize:13,marginBottom:4 }}>{p}</div>
                         <div style={{ display:"flex",justifyContent:"space-between" }}>
                           <span style={{ fontSize:11,color:C.green,fontWeight:700 }}>{s1.w+s2.w}W</span>
                           <span style={{ fontSize:11,color:C.red,fontWeight:700 }}>{s1.l+s2.l}L</span>
@@ -383,8 +372,6 @@ export default function App() {
                 })}
               </div>
             </div>
-
-            {/* DPL TEAMS */}
             <div>
               <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16 }}>
                 <h3 style={{ fontSize:16,fontWeight:800 }}>🏆 DPL Season 3 Teams</h3>
@@ -392,7 +379,7 @@ export default function App() {
               </div>
               <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12 }}>
                 {TEAMS.map(t=>(
-                  <div key={t.id} onClick={()=>{setSelTeam(t.id);setView("teams");}} style={{ background:C.card,border:`1px solid ${t.color}33`,borderRadius:16,padding:18,cursor:"pointer",transition:"all 0.2s" }}
+                  <div key={t.id} onClick={()=>{setSelTeam(t.id);setView("teams");}} style={{ background:C.card,border:`1px solid ${t.color}33`,borderRadius:16,padding:18,cursor:"pointer" }}
                     onMouseEnter={e=>e.currentTarget.style.borderColor=t.color}
                     onMouseLeave={e=>e.currentTarget.style.borderColor=`${t.color}33`}>
                     <div style={{ fontSize:28,marginBottom:8 }}>{t.emoji}</div>
@@ -405,7 +392,6 @@ export default function App() {
           </div>
         )}
 
-        {/* UPCOMING FIXTURES */}
         {view==="upcoming"&&(
           <div style={{ display:"flex",flexDirection:"column",gap:16 }}>
             <div style={{ ...cardStyle,border:`1px solid #f9731633`,padding:20 }}>
@@ -424,7 +410,7 @@ export default function App() {
                     <div><label style={{ fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:4 }}>Time</label><input type="time" value={newFixture.time} onChange={e=>setNewFixture(p=>({...p,time:e.target.value}))}/></div>
                   </div>
                   <div><label style={{ fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:4 }}>Venue</label><input placeholder="e.g. Africa Padel KCC" value={newFixture.venue} onChange={e=>setNewFixture(p=>({...p,venue:e.target.value}))}/></div>
-                  <div><label style={{ fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:4 }}>Teams / Description</label><input placeholder="e.g. Team A vs Team B" value={newFixture.teams} onChange={e=>setNewFixture(p=>({...p,teams:e.target.value}))}/></div>
+                  <div><label style={{ fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:4 }}>Teams</label><input placeholder="e.g. Overhead Casualties vs Circumserve" value={newFixture.teams} onChange={e=>setNewFixture(p=>({...p,teams:e.target.value}))}/></div>
                   <button onClick={addFixture} style={{ padding:"9px",background:C.orange,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer",fontFamily:"inherit" }}>Save Fixture</button>
                 </div>
               )}
@@ -447,7 +433,7 @@ export default function App() {
                           <div style={{ fontSize:9,fontWeight:800,color:C.muted,textTransform:"uppercase" }}>{new Date(f.date).toLocaleString("default",{month:"short"})}</div>
                         </div>
                         <div>
-                          <div style={{ fontWeight:800,fontSize:14,color:C.text,marginBottom:4 }}>{f.teams}</div>
+                          <div style={{ fontWeight:800,fontSize:14,marginBottom:4 }}>{f.teams}</div>
                           <div style={{ display:"flex",gap:10,flexWrap:"wrap" }}>
                             {f.time&&<span style={{ fontSize:11,color:C.muted }}>🕐 {f.time}</span>}
                             {f.venue&&<span style={{ fontSize:11,color:C.muted }}>📍 {f.venue}</span>}
@@ -468,14 +454,13 @@ export default function App() {
           </div>
         )}
 
-        {/* DPL SEASON 3 */}
         {view==="dpl"&&(
           <div style={{ display:"flex",flexDirection:"column",gap:20 }}>
             <div style={{ ...cardStyle,border:`1px solid ${C.gold}44`,padding:20,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12 }}>
               <div>
                 <div style={{ fontSize:11,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4 }}>Degenerates Padel League</div>
                 <h2 style={{ fontSize:24,fontWeight:900,letterSpacing:"-0.03em",marginBottom:4 }}>Season 3 — Pool Stage</h2>
-                <p style={{ fontSize:13,color:C.muted }}>Best of 3 sets · Round Robin · Win 2-0=3pts, 2-1=2pts, 1-2=1pt, 0-2=0pts</p>
+                <p style={{ fontSize:13,color:C.muted }}>Best of 3 · Win 2-0=3pts · 2-1=2pts · 1-2=1pt · 0-2=0pts</p>
               </div>
               <ShareBtn getText={waDPL}/>
             </div>
@@ -545,13 +530,13 @@ export default function App() {
                         <div style={{ flex:1,display:"flex",alignItems:"center",gap:10,minWidth:200 }}>
                           <div style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:2 }}>
                             <span style={{ fontSize:18 }}>{t1.emoji}</span>
-                            <span style={{ fontSize:10,fontWeight:800,color:t1.color,whiteSpace:"nowrap" }}>{t1.name}</span>
+                            <span style={{ fontSize:10,fontWeight:800,color:t1.color,whiteSpace:"nowrap",textAlign:"center" }}>{t1.name}</span>
                             <span style={{ fontSize:9,color:C.muted }}>{t1.p1} & {t1.p2}</span>
                           </div>
                           <span style={{ color:C.muted,fontSize:12,fontWeight:700,padding:"0 8px" }}>vs</span>
                           <div style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:2 }}>
                             <span style={{ fontSize:18 }}>{t2.emoji}</span>
-                            <span style={{ fontSize:10,fontWeight:800,color:t2.color,whiteSpace:"nowrap" }}>{t2.name}</span>
+                            <span style={{ fontSize:10,fontWeight:800,color:t2.color,whiteSpace:"nowrap",textAlign:"center" }}>{t2.name}</span>
                             <span style={{ fontSize:9,color:C.muted }}>{t2.p1} & {t2.p2}</span>
                           </div>
                         </div>
@@ -577,7 +562,6 @@ export default function App() {
           </div>
         )}
 
-        {/* SEASON 2 */}
         {view==="s2"&&(
           <div style={{ display:"flex",flexDirection:"column",gap:20 }}>
             <div style={{ ...cardStyle,padding:20,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12 }}>
@@ -630,7 +614,6 @@ export default function App() {
           </div>
         )}
 
-        {/* SEASON 1 */}
         {view==="s1"&&(
           <div style={{ display:"flex",flexDirection:"column",gap:20 }}>
             <div style={{ ...cardStyle,padding:20,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12 }}>
@@ -683,7 +666,6 @@ export default function App() {
           </div>
         )}
 
-        {/* PLAYERS */}
         {view==="players"&&!selPlayer&&(
           <div style={{ display:"flex",flexDirection:"column",gap:20 }}>
             <div style={{ ...cardStyle,padding:20 }}>
@@ -694,7 +676,7 @@ export default function App() {
               {ALL_PLAYERS.map(p=>{
                 const s1=s1stats.find(x=>x.name===p)||{w:0,l:0,played:0};
                 const s2=s2stats.find(x=>x.name===p)||{w:0,l:0,played:0};
-                const total=s1.w+s2.w, played=s1.played+s2.played, col=pColor(p);
+                const total=s1.w+s2.w,played=s1.played+s2.played,col=pColor(p);
                 return (
                   <div key={p} onClick={()=>setSelPlayer(p)} style={{ background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden",cursor:"pointer" }}
                     onMouseEnter={e=>e.currentTarget.style.borderColor=col}
@@ -721,14 +703,14 @@ export default function App() {
         )}
 
         {view==="players"&&selPlayer&&(()=>{
-          const p=selPlayer, col=pColor(p);
+          const p=selPlayer,col=pColor(p);
           const s1=s1stats.find(x=>x.name===p)||{w:0,l:0,played:0};
           const s2=s2stats.find(x=>x.name===p)||{w:0,l:0,played:0};
           const allM=[...SEASON1,...SEASON2].filter(m=>[m.p1,m.p2,m.p3,m.p4].includes(p));
           const dplTeam=TEAMS.find(t=>t.p1===p||t.p2===p);
           const waPlayer=()=>{
             let t=`🎾 *${p} — DPL Profile*\nAll-time: ${s1.w+s2.w}W ${s1.l+s2.l}L\nWin rate: ${s1.played+s2.played>0?Math.round((s1.w+s2.w)/(s1.played+s2.played)*100):0}%`;
-            if(dplTeam) t+=`\nDPL Team: ${dplTeam.name}`;
+            if(dplTeam)t+=`\nDPL Team: ${dplTeam.name}`;
             return t;
           };
           return (
@@ -782,7 +764,6 @@ export default function App() {
           );
         })()}
 
-        {/* TEAMS */}
         {view==="teams"&&!selTeam&&(
           <div style={{ display:"flex",flexDirection:"column",gap:20 }}>
             <div style={{ ...cardStyle,padding:20 }}>
