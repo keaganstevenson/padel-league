@@ -23,8 +23,8 @@ const SCHEDULE = [
     { t1:"t4", t2:"t3", scores:["3-6","6-2","6-3"], result:[2,1] },
   ]},
   { round:2, date:"Tue, 21 Jul 2026", matches:[
-    { t1:"t1", t2:"t3", scores:null },
-    { t1:"t2", t2:"t4", scores:null },
+    { t1:"t3", t2:"t1", scores:["6-3","7-5","6-4"], result:[2,0] },
+    { t1:"t4", t2:"t2", scores:["6-4","7-5","7-5"], result:[2,0] },
   ]},
   { round:3, date:"Tue, 28 Jul 2026", matches:[
     { t1:"t1", t2:"t4", scores:null },
@@ -200,7 +200,7 @@ export default function App() {
   const [newFixture,setNewFixture]=useState({date:"",time:"",venue:"",teams:""});
   const [showAddFixture,setShowAddFixture]=useState(false);
 
-  const TODAY=new Date("2026-07-15");
+  const TODAY=new Date("2026-07-22");
   const activeFixtures=fixtures.filter(f=>new Date(f.date)>=TODAY);
 
   const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
@@ -332,7 +332,7 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{ display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,minWidth:200 }}>
-                  {[{v:"48",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"9",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
+                  {[{v:"50",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"9",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
                     <div key={s.l} style={{ background:`${s.c}0d`,border:`1px solid ${s.c}22`,borderRadius:14,padding:"16px 12px",textAlign:"center" }}>
                       <div style={{ fontSize:30,fontWeight:900,color:s.c,lineHeight:1 }}>{s.v}</div>
                       <div style={{ fontSize:10,color:`${s.c}99`,fontWeight:800,textTransform:"uppercase",marginTop:4 }}>{s.l}</div>
