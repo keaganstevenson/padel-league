@@ -15,6 +15,7 @@ const TEAMS = [
   { id:"t2", name:"Circumserve",         color:"#ffd700", p1:"Byron",   p2:"Keagan",  emoji:"🌀" },
   { id:"t3", name:"One Nice Guy",        color:"#00e676", p1:"John",    p2:"Michael", emoji:"😇" },
   { id:"t4", name:"EFF",                 color:"#ff5252", p1:"Darren",  p2:"Connor",  emoji:"🔥" },
+  { id:"t5", name:"The Benchwarmers",    color:"#a78bfa", p1:"Nathan",  p2:"Brett",   emoji:"🪑" },
 ];
 
 const SCHEDULE = [
@@ -26,15 +27,31 @@ const SCHEDULE = [
     { t1:"t3", t2:"t1", scores:["6-3","7-5","6-4"], result:[2,0] },
     { t1:"t4", t2:"t2", scores:["6-4","7-5","7-5"], result:[2,0] },
   ]},
-  { round:3, date:"Tue, 28 Jul 2026", matches:[
+  { round:3, date:"Wed, 30 Jul 2026", matches:[
+    { t1:"t4", t2:"t1", scores:["6-3","6-3","6-3"], result:[2,0] },
+    { t1:"t2", t2:"t5", scores:["7-6","1-6","7-5"], result:[2,1], forfeit:{ team:"t3", note:"One Nice Guy forfeited — substituted by The Benchwarmers (Nathan & Brett). Circumserve awarded 2 points automatically." } },
+  ]},
+  { round:4, date:"Tue, 05 Aug 2026", matches:[
+    { t1:"t1", t2:"t3", scores:null },
+    { t1:"t2", t2:"t4", scores:null },
+  ]},
+  { round:5, date:"Tue, 12 Aug 2026", matches:[
+    { t1:"t3", t2:"t2", scores:null },
     { t1:"t1", t2:"t4", scores:null },
-    { t1:"t2", t2:"t3", scores:null },
+  ]},
+  { round:6, date:"Tue, 19 Aug 2026", matches:[
+    { t1:"t3", t2:"t4", scores:null },
+    { t1:"t1", t2:"t2", scores:null },
   ]},
 ];
 
 const UPCOMING_FIXTURES = [
-  { id:"f5", date:"2026-07-28", time:"18:30", venue:"Africa Padel KCC", teams:"Overhead Casualties vs EFF" },
-  { id:"f6", date:"2026-07-28", time:"18:30", venue:"Africa Padel KCC", teams:"Circumserve vs One Nice Guy" },
+  { id:"f4", date:"2026-08-05", time:"18:30", venue:"Africa Padel KCC", teams:"Overhead Casualties vs One Nice Guy" },
+  { id:"f5", date:"2026-08-05", time:"18:30", venue:"Africa Padel KCC", teams:"Circumserve vs EFF" },
+  { id:"f6", date:"2026-08-12", time:"18:30", venue:"Africa Padel KCC", teams:"One Nice Guy vs Circumserve" },
+  { id:"f7", date:"2026-08-12", time:"18:30", venue:"Africa Padel KCC", teams:"Overhead Casualties vs EFF" },
+  { id:"f8", date:"2026-08-19", time:"18:30", venue:"Africa Padel KCC", teams:"One Nice Guy vs EFF" },
+  { id:"f9", date:"2026-08-19", time:"18:30", venue:"Africa Padel KCC", teams:"Overhead Casualties vs Circumserve" },
 ];
 
 const SEASON1 = [
@@ -83,13 +100,15 @@ const SEASON3 = [
   { week:1, date:"14 Jul 2026", p1:"Darren",  p2:"Connor",  p3:"John",    p4:"Michael", s:[3,6,6,2,6,3], w:1 },
   { week:2, date:"21 Jul 2026", p1:"John",    p2:"Michael", p3:"Brandon", p4:"Graeme",  s:[6,3,7,5,6,4], w:1 },
   { week:2, date:"21 Jul 2026", p1:"Darren",  p2:"Connor",  p3:"Byron",   p4:"Keagan",  s:[6,4,7,5,7,5], w:1 },
+  { week:3, date:"30 Jul 2026", p1:"Darren",  p2:"Connor",  p3:"Brandon", p4:"Graeme",  s:[6,3,6,3,6,3], w:1 },
+  { week:3, date:"30 Jul 2026", p1:"Byron",   p2:"Keagan",  p3:"Nathan",  p4:"Brett",   s:[7,6,1,6,7,5], w:1 },
 ];
 
-const ALL_PLAYERS = ["Brandon","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
+const ALL_PLAYERS = ["Brandon","Brett","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
 
 const PLAYER_PHOTOS = {
-  Brandon:null, Byron:null, Connor:null, Darren:null,
-  Graeme:null, John:null, Keagan:null, Michael:null, Nathan:null,
+  Brandon:null,Brett:null,Byron:null,Connor:null,Darren:null,
+  Graeme:null,John:null,Keagan:null,Michael:null,Nathan:null,
 };
 
 const PLAYTOMIC_LINKS = {
@@ -104,13 +123,16 @@ const PLAYTOMIC_LINKS = {
   Michael:"https://app.playtomic.com/profile/user/4203130?utm_source=app_ios&utm_campaign=share",
 };
 
-const PALETTE = ["#00d4ff","#ffd700","#00e676","#ff5252","#a78bfa","#fb923c","#34d399","#f472b6","#60a5fa"];
-const ALL_MATCHES = [...SEASON1, ...SEASON2, ...SEASON3];
+const PALETTE = ["#00d4ff","#f472b6","#ffd700","#ff5252","#fb923c","#34d399","#a78bfa","#60a5fa","#00e676","#facc15"];
+const ALL_MATCHES = [...SEASON1,...SEASON2,...SEASON3];
 
-function pColor(n) { const i=ALL_PLAYERS.indexOf(n); return PALETTE[i>=0?i:0]; }
-function initials(n) { return n.slice(0,2).toUpperCase(); }
+function pColor(n) {
+  const order=["Brandon","Brett","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
+  const i=order.indexOf(n); return PALETTE[i>=0?i:0];
+}
+function initials(n){return n.slice(0,2).toUpperCase();}
 
-function calcStats(matches) {
+function calcStats(matches){
   const stats={};
   ALL_PLAYERS.forEach(p=>stats[p]={name:p,w:0,l:0,played:0});
   matches.forEach(m=>{
@@ -121,8 +143,8 @@ function calcStats(matches) {
   return stats;
 }
 
-function Avatar({name,size=36,ring=false}) {
-  const c=pColor(name), photo=PLAYER_PHOTOS[name];
+function Avatar({name,size=36,ring=false}){
+  const c=pColor(name),photo=PLAYER_PHOTOS[name];
   return photo?(
     <div style={{width:size,height:size,borderRadius:"50%",overflow:"hidden",flexShrink:0,border:`2px solid ${c}`,boxShadow:ring?`0 0 12px ${c}44`:"none"}}>
       <img src={photo} alt={name} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
@@ -134,10 +156,10 @@ function Avatar({name,size=36,ring=false}) {
   );
 }
 
-function MatchCard({m,accent}) {
+function MatchCard({m,accent}){
   const winners=[m.p1,m.p2],losers=[m.p3,m.p4];
   const ws=[m.s[0],m.s[2],m.s[4]],ls=[m.s[1],m.s[3],m.s[5]];
-  return (
+  return(
     <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
       <div style={{height:3,background:`linear-gradient(90deg,${accent||C.accent},${accent||C.accent}44)`}}/>
       {[[winners,ws,ls,true],[losers,ls,ws,false]].map(([team,ts,os,won],ri)=>(
@@ -165,13 +187,13 @@ function MatchCard({m,accent}) {
   );
 }
 
-function ShareBtn({getText}) {
+function ShareBtn({getText}){
   const share=()=>{
     const text=getText();
     try{navigator.clipboard.writeText(text);}catch(e){}
     setTimeout(()=>window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank"),200);
   };
-  return (
+  return(
     <button onClick={share} style={{display:"flex",alignItems:"center",gap:6,padding:"7px 16px",background:"#25d366",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       Share to WhatsApp
@@ -179,22 +201,27 @@ function ShareBtn({getText}) {
   );
 }
 
-function calcTeamStandings(schedule) {
-  const pts={t1:0,t2:0,t3:0,t4:0},sw={t1:0,t2:0,t3:0,t4:0},sl={t1:0,t2:0,t3:0,t4:0},played={t1:0,t2:0,t3:0,t4:0};
+function calcTeamStandings(schedule){
+  // t3 (One Nice Guy) gets 0pts for forfeited match, t2 (Circumserve) gets 2pts auto
+  const pts={t1:0,t2:2,t3:0,t4:0},sw={t1:0,t2:0,t3:0,t4:0},sl={t1:0,t2:0,t3:0,t4:0},played={t1:0,t2:0,t3:0,t4:0};
   schedule.forEach(r=>r.matches.forEach(m=>{
     if(!m.scores||!m.result)return;
+    // skip the forfeit/substitute match (t2 vs t5) for team standings except the auto pts above
+    if((m.t1==="t5"||m.t2==="t5"))return;
     played[m.t1]++;played[m.t2]++;
     const[s1,s2]=m.result;
     sw[m.t1]+=s1;sl[m.t1]+=s2;sw[m.t2]+=s2;sl[m.t2]+=s1;
     if(s1>s2){pts[m.t1]+=s1===2&&s2===0?3:2;pts[m.t2]+=s2===1?1:0;}
     else{pts[m.t2]+=s2===2&&s1===0?3:2;pts[m.t1]+=s1===1?1:0;}
   }));
-  return TEAMS.map(t=>({...t,pts:pts[t.id],sw:sw[t.id],sl:sl[t.id],played:played[t.id]})).sort((a,b)=>b.pts-a.pts||(b.sw-b.sl)-(a.sw-a.sl));
+  // count the forfeited round as played for both t2 and t3
+  played["t2"]++;played["t3"]++;
+  return TEAMS.filter(t=>t.id!=="t5").map(t=>({...t,pts:pts[t.id]||0,sw:sw[t.id]||0,sl:sl[t.id]||0,played:played[t.id]||0})).sort((a,b)=>b.pts-a.pts||(b.sw-b.sl)-(a.sw-a.sl));
 }
 
 const ADMIN_PIN="1234";
 
-export default function App() {
+export default function App(){
   const [view,setView]=useState("home");
   const [selPlayer,setSelPlayer]=useState(null);
   const [selTeam,setSelTeam]=useState(null);
@@ -209,8 +236,8 @@ export default function App() {
   const [newFixture,setNewFixture]=useState({date:"",time:"",venue:"",teams:""});
   const [showAddFixture,setShowAddFixture]=useState(false);
 
-  const TODAY=new Date("2026-07-22");
-  const activeFixtures=fixtures.filter(f=>new Date(f.date)>=TODAY);
+  const TODAY=new Date("2026-07-30");
+  const activeFixtures=fixtures.filter(f=>new Date(f.date)>TODAY);
 
   const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
   const handlePin=k=>{
@@ -221,8 +248,6 @@ export default function App() {
   };
 
   const standings=useMemo(()=>calcTeamStandings(schedule),[schedule]);
-
-  // Single source of truth — calculated once from ALL_MATCHES
   const allStats=useMemo(()=>calcStats(ALL_MATCHES),[]);
   const s1stats=useMemo(()=>calcStats(SEASON1),[]);
   const s2stats=useMemo(()=>calcStats(SEASON2),[]);
@@ -260,23 +285,24 @@ export default function App() {
     {id:"teams",label:"Teams",icon:"🛡"},
   ];
 
-  const waS2=()=>{
-    let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*Season 2 Standings*\n\n`;
-    Object.values(calcStats(SEASON2)).filter(p=>p.played>0).sort((a,b)=>b.w-a.w).forEach((p,i)=>t+=`${i+1}. ${p.name} — ${p.w}W ${p.l}L\n`);
-    return t;
-  };
-  const waS1=()=>{
-    let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*Season 1 Final Standings*\n\n`;
-    Object.values(calcStats(SEASON1)).filter(p=>p.played>0).sort((a,b)=>b.w-a.w).forEach((p,i)=>t+=`${i+1}. ${p.name} — ${p.w}W ${p.l}L\n`);
-    return t;
-  };
   const waDPL=()=>{
     let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*Season 3 Pool Standings*\n\n`;
     standings.forEach((tm,i)=>t+=`${i+1}. ${tm.name} — ${tm.pts} pts (${tm.sw}-${tm.sl} sets)\n`);
+    t+=`\n⚠️ One Nice Guy forfeited Round 3 — Circumserve awarded 2pts automatically.`;
+    return t;
+  };
+  const waS2=()=>{
+    let t=`🎾 *DPL Season 2 Standings*\n\n`;
+    Object.values(s2stats).filter(p=>p.played>0).sort((a,b)=>b.w-a.w).forEach((p,i)=>t+=`${i+1}. ${p.name} — ${p.w}W ${p.l}L\n`);
+    return t;
+  };
+  const waS1=()=>{
+    let t=`🎾 *DPL Season 1 Final Standings*\n\n`;
+    Object.values(s1stats).filter(p=>p.played>0).sort((a,b)=>b.w-a.w).forEach((p,i)=>t+=`${i+1}. ${p.name} — ${p.w}W ${p.l}L\n`);
     return t;
   };
 
-  return (
+  return(
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','system-ui',sans-serif",paddingBottom:80}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#1e1e2e;border-radius:4px}input,select,textarea{background:#1a1a2e!important;color:#e2e8f0!important;border:1px solid #2d2d4e!important;border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;outline:none;width:100%}input:focus,select:focus{border-color:#00d4ff!important}`}</style>
 
@@ -303,7 +329,7 @@ export default function App() {
       <nav style={{background:`${C.card}f0`,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:50,backdropFilter:"blur(12px)"}}>
         <div style={{maxWidth:1000,margin:"0 auto",padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
           <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-            {LOGO_SQUARE_URL?(<img src={LOGO_SQUARE_URL} alt="DPL" style={{width:36,height:36,borderRadius:10,objectFit:"cover"}}/>):(<div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#00d4ff,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🎾</div>)}
+            {LOGO_SQUARE_URL?<img src={LOGO_SQUARE_URL} alt="DPL" style={{width:36,height:36,borderRadius:10,objectFit:"cover"}}/>:<div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#00d4ff,#7c3aed)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🎾</div>}
             <span style={{fontWeight:900,fontSize:15,letterSpacing:"-0.03em",color:C.accent}}>DPL</span>
           </div>
           <div style={{display:"flex",gap:2,overflowX:"auto",flex:1}}>
@@ -339,7 +365,7 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,minWidth:200}}>
-                  {[{v:"50",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"9",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
+                  {[{v:"52",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"10",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
                     <div key={s.l} style={{background:`${s.c}0d`,border:`1px solid ${s.c}22`,borderRadius:14,padding:"16px 12px",textAlign:"center"}}>
                       <div style={{fontSize:30,fontWeight:900,color:s.c,lineHeight:1}}>{s.v}</div>
                       <div style={{fontSize:10,color:`${s.c}99`,fontWeight:800,textTransform:"uppercase",marginTop:4}}>{s.l}</div>
@@ -349,29 +375,27 @@ export default function App() {
               </div>
             </div>
 
-            {/* SQUAD GRID — uses allStats for correct all-time totals */}
             <div>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
                 <h3 style={{fontSize:16,fontWeight:800}}>👥 The Squad</h3>
                 <button onClick={()=>setView("players")} style={{fontSize:11,color:C.accent,background:"transparent",border:"none",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}>View all stats →</button>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:12}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:12}}>
                 {ALL_PLAYERS.map(p=>{
-                  const photo=PLAYER_PHOTOS[p], col=pColor(p);
-                  const at=allStats[p]||{w:0,l:0};
-                  return (
+                  const photo=PLAYER_PHOTOS[p],col=pColor(p),at=allStats[p]||{w:0,l:0};
+                  return(
                     <div key={p} onClick={()=>{setSelPlayer(p);setView("players");}} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden",cursor:"pointer"}}
                       onMouseEnter={e=>e.currentTarget.style.borderColor=col}
                       onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
-                      <div style={{height:90,background:`${col}11`,display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
-                        {photo?<img src={photo} alt={p} style={{width:72,height:72,borderRadius:"50%",objectFit:"cover",border:`3px solid ${col}`}}/>:<Avatar name={p} size={72} ring/>}
-                        <div style={{position:"absolute",bottom:0,left:0,right:0,height:24,background:`linear-gradient(transparent,${C.card})`}}/>
+                      <div style={{height:80,background:`${col}11`,display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
+                        {photo?<img src={photo} alt={p} style={{width:64,height:64,borderRadius:"50%",objectFit:"cover",border:`3px solid ${col}`}}/>:<Avatar name={p} size={64} ring/>}
+                        <div style={{position:"absolute",bottom:0,left:0,right:0,height:20,background:`linear-gradient(transparent,${C.card})`}}/>
                       </div>
-                      <div style={{padding:"10px 12px"}}>
-                        <div style={{fontWeight:800,fontSize:13,marginBottom:4}}>{p}</div>
+                      <div style={{padding:"8px 10px"}}>
+                        <div style={{fontWeight:800,fontSize:12,marginBottom:3}}>{p}</div>
                         <div style={{display:"flex",justifyContent:"space-between"}}>
-                          <span style={{fontSize:11,color:C.green,fontWeight:700}}>{at.w}W</span>
-                          <span style={{fontSize:11,color:C.red,fontWeight:700}}>{at.l}L</span>
+                          <span style={{fontSize:10,color:C.green,fontWeight:700}}>{at.w}W</span>
+                          <span style={{fontSize:10,color:C.red,fontWeight:700}}>{at.l}L</span>
                         </div>
                       </div>
                     </div>
@@ -385,8 +409,8 @@ export default function App() {
                 <h3 style={{fontSize:16,fontWeight:800}}>🏆 DPL Season 3 Teams</h3>
                 <button onClick={()=>setView("dpl")} style={{fontSize:11,color:C.accent,background:"transparent",border:"none",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}>View standings →</button>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12}}>
-                {TEAMS.map(t=>(
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12}}>
+                {TEAMS.filter(t=>t.id!=="t5").map(t=>(
                   <div key={t.id} onClick={()=>{setSelTeam(t.id);setView("teams");}} style={{background:C.card,border:`1px solid ${t.color}33`,borderRadius:16,padding:18,cursor:"pointer"}}
                     onMouseEnter={e=>e.currentTarget.style.borderColor=t.color}
                     onMouseLeave={e=>e.currentTarget.style.borderColor=`${t.color}33`}>
@@ -419,7 +443,7 @@ export default function App() {
                     <div><label style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:4}}>Time</label><input type="time" value={newFixture.time} onChange={e=>setNewFixture(p=>({...p,time:e.target.value}))}/></div>
                   </div>
                   <div><label style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:4}}>Venue</label><input placeholder="e.g. Africa Padel KCC" value={newFixture.venue} onChange={e=>setNewFixture(p=>({...p,venue:e.target.value}))}/></div>
-                  <div><label style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:4}}>Teams</label><input placeholder="e.g. Overhead Casualties vs Circumserve" value={newFixture.teams} onChange={e=>setNewFixture(p=>({...p,teams:e.target.value}))}/></div>
+                  <div><label style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:4}}>Teams</label><input placeholder="e.g. Team A vs Team B" value={newFixture.teams} onChange={e=>setNewFixture(p=>({...p,teams:e.target.value}))}/></div>
                   <button onClick={addFixture} style={{padding:"9px",background:C.orange,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Save Fixture</button>
                 </div>
               )}
@@ -434,7 +458,7 @@ export default function App() {
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {activeFixtures.map(f=>{
                   const daysUntil=Math.ceil((new Date(f.date)-TODAY)/(1000*60*60*24));
-                  return (
+                  return(
                     <div key={f.id} style={{background:C.card,border:`1px solid ${daysUntil<=3?"#f9731655":C.border}`,borderRadius:14,padding:18,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
                       <div style={{display:"flex",gap:16,alignItems:"center"}}>
                         <div style={{background:daysUntil<=3?"#f9731611":C.surface,border:`1px solid ${daysUntil<=3?"#f9731633":C.border}`,borderRadius:12,padding:"10px 14px",textAlign:"center",minWidth:56}}>
@@ -474,6 +498,16 @@ export default function App() {
               </div>
               <ShareBtn getText={waDPL}/>
             </div>
+
+            {/* Forfeit notice */}
+            <div style={{background:"#f9731611",border:"1px solid #f9731644",borderRadius:14,padding:"12px 16px",display:"flex",gap:10,alignItems:"flex-start"}}>
+              <span style={{fontSize:18,flexShrink:0}}>⚠️</span>
+              <div>
+                <div style={{fontWeight:800,fontSize:13,color:C.orange,marginBottom:2}}>Round 3 Forfeit — One Nice Guy</div>
+                <div style={{fontSize:12,color:C.muted,lineHeight:1.6}}>One Nice Guy were unable to field their team on 30 Jul 2026. Substitutes Nathan & Brett played as <strong style={{color:"#a78bfa"}}>The Benchwarmers</strong> in their place. <strong style={{color:C.gold}}>Circumserve were awarded 2 points automatically</strong>. One Nice Guy receive 0 points for this round.</div>
+              </div>
+            </div>
+
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
               <div style={cardStyle}>
                 <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,background:`${C.gold}0d`}}>
@@ -504,14 +538,14 @@ export default function App() {
                   <span style={{fontSize:11,fontWeight:800,color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em"}}>⚡ Knockout Stage</span>
                 </div>
                 <div style={{padding:16,display:"flex",flexDirection:"column",gap:10}}>
-                  <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Semi-Finals — 4 Aug 2026</div>
+                  <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Semi-Finals — TBD</div>
                   {[{l:"Semi A",d:"1st vs 4th Place"},{l:"Semi B",d:"2nd vs 3rd Place"}].map(s=>(
                     <div key={s.l} style={{background:"#7c3aed11",border:"1px solid #7c3aed33",borderRadius:10,padding:12}}>
                       <span style={{fontSize:11,fontWeight:800,color:"#a78bfa"}}>{s.l}</span>
                       <div style={{fontSize:12,color:C.muted,marginTop:2}}>{s.d}</div>
                     </div>
                   ))}
-                  <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginTop:4}}>Finals — 11 Aug 2026</div>
+                  <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginTop:4}}>Finals — TBD</div>
                   <div style={{background:`${C.gold}11`,border:`1px solid ${C.gold}33`,borderRadius:10,padding:12}}>
                     <div style={{fontSize:11,fontWeight:800,color:C.gold}}>🏆 Grand Final</div>
                     <div style={{fontSize:12,color:C.muted,marginTop:2}}>Winner Semi A vs Winner Semi B</div>
@@ -523,9 +557,10 @@ export default function App() {
                 </div>
               </div>
             </div>
+
             <div style={cardStyle}>
               <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`}}>
-                <span style={{fontSize:11,fontWeight:800,color:C.accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>📅 Round Robin Schedule</span>
+                <span style={{fontSize:11,fontWeight:800,color:C.accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>📅 Full Schedule</span>
               </div>
               {schedule.map((round,ri)=>(
                 <div key={ri} style={{borderBottom:`1px solid ${C.border}33`}}>
@@ -535,34 +570,38 @@ export default function App() {
                   </div>
                   {round.matches.map((m,mi)=>{
                     const t1=getT(m.t1),t2=getT(m.t2),key=`${ri}-${mi}`;
-                    return (
-                      <div key={mi} style={{padding:"14px 16px",display:"flex",alignItems:"center",gap:12,borderBottom:mi<round.matches.length-1?`1px solid ${C.border}22`:"none",flexWrap:"wrap"}}>
-                        <div style={{flex:1,display:"flex",alignItems:"center",gap:10,minWidth:200}}>
-                          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                            <span style={{fontSize:18}}>{t1.emoji}</span>
+                    const isForfeit=!!m.forfeit;
+                    return(
+                      <div key={mi} style={{padding:"14px 16px",display:"flex",alignItems:"center",gap:12,borderBottom:mi<round.matches.length-1?`1px solid ${C.border}22`:"none",flexWrap:"wrap",background:isForfeit?"#f9731608":"transparent"}}>
+                        <div style={{flex:1,display:"flex",alignItems:"center",gap:10,minWidth:180}}>
+                          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                            <span style={{fontSize:16}}>{t1.emoji}</span>
                             <span style={{fontSize:10,fontWeight:800,color:t1.color,textAlign:"center"}}>{t1.name}</span>
                             <span style={{fontSize:9,color:C.muted}}>{t1.p1} & {t1.p2}</span>
                           </div>
-                          <span style={{color:C.muted,fontSize:12,fontWeight:700,padding:"0 8px"}}>vs</span>
-                          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                            <span style={{fontSize:18}}>{t2.emoji}</span>
+                          <span style={{color:C.muted,fontSize:12,fontWeight:700,padding:"0 6px"}}>vs</span>
+                          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                            <span style={{fontSize:16}}>{t2.emoji}</span>
                             <span style={{fontSize:10,fontWeight:800,color:t2.color,textAlign:"center"}}>{t2.name}</span>
                             <span style={{fontSize:9,color:C.muted}}>{t2.p1} & {t2.p2}</span>
                           </div>
                         </div>
-                        {m.scores?(
-                          <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-                            {m.scores.map((sc,si)=><span key={si} style={{fontSize:13,fontWeight:800,background:C.surface,borderRadius:6,padding:"3px 10px"}}>{sc}</span>)}
-                            <span style={{fontSize:11,fontWeight:800,color:m.result[0]>m.result[1]?t1.color:t2.color,background:C.surface,borderRadius:8,padding:"4px 12px"}}>
-                              {m.result[0]>m.result[1]?`${t1.name} wins`:`${t2.name} wins`}
-                            </span>
-                          </div>
-                        ):adminMode?(
-                          <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                            <input placeholder="6-4, 3-6, 6-2" value={inputScores[key]||""} onChange={e=>setInputScores(p=>({...p,[key]:e.target.value}))} style={{width:130}}/>
-                            <button onClick={()=>saveResult(ri,mi)} style={{padding:"7px 16px",background:C.accent,border:"none",borderRadius:8,color:"#0a0a0f",fontWeight:800,fontSize:11,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>Save</button>
-                          </div>
-                        ):<span style={{fontSize:11,color:C.muted,background:`${C.accent}0d`,border:`1px solid ${C.accent}22`,borderRadius:8,padding:"4px 12px"}}>Upcoming</span>}
+                        <div style={{display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
+                          {m.scores?(
+                            <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                              {m.scores.map((sc,si)=><span key={si} style={{fontSize:12,fontWeight:800,background:C.surface,borderRadius:6,padding:"3px 8px"}}>{sc}</span>)}
+                              <span style={{fontSize:11,fontWeight:800,color:m.result[0]>m.result[1]?t1.color:t2.color,background:C.surface,borderRadius:8,padding:"3px 10px"}}>
+                                {m.result[0]>m.result[1]?`${t1.name} wins`:`${t2.name} wins`}
+                              </span>
+                            </div>
+                          ):adminMode?(
+                            <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                              <input placeholder="6-4, 3-6, 6-2" value={inputScores[key]||""} onChange={e=>setInputScores(p=>({...p,[key]:e.target.value}))} style={{width:120}}/>
+                              <button onClick={()=>saveResult(ri,mi)} style={{padding:"6px 14px",background:C.accent,border:"none",borderRadius:8,color:"#0a0a0f",fontWeight:800,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>Save</button>
+                            </div>
+                          ):<span style={{fontSize:11,color:C.muted,background:`${C.accent}0d`,border:`1px solid ${C.accent}22`,borderRadius:8,padding:"4px 10px"}}>Upcoming</span>}
+                          {isForfeit&&<span style={{fontSize:9,fontWeight:700,color:C.orange}}>⚠️ Sub team played (ONG forfeited)</span>}
+                        </div>
                       </div>
                     );
                   })}
@@ -585,30 +624,22 @@ export default function App() {
             </div>
             {(()=>{
               const sorted=Object.values(s2stats).filter(p=>p.played>0).sort((a,b)=>b.w-a.w);
-              return (<>
+              return(<>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12}}>
                   {sorted.slice(0,3).map((p,i)=>(
                     <div key={p.name} style={{background:C.card,border:`1px solid ${[C.gold,C.silver,C.bronze][i]}44`,borderRadius:16,padding:16,display:"flex",alignItems:"center",gap:12}}>
-                      <span style={{fontSize:28}}>{["🥇","🥈","🥉"][i]}</span>
-                      <Avatar name={p.name} size={44}/>
-                      <div>
-                        <div style={{fontWeight:900,fontSize:15,color:[C.gold,C.silver,C.bronze][i]}}>{p.name}</div>
-                        <div style={{fontSize:12,color:C.muted,fontWeight:700}}>{p.w}W — {p.l}L</div>
-                      </div>
+                      <span style={{fontSize:28}}>{["🥇","🥈","🥉"][i]}</span><Avatar name={p.name} size={44}/>
+                      <div><div style={{fontWeight:900,fontSize:15,color:[C.gold,C.silver,C.bronze][i]}}>{p.name}</div><div style={{fontSize:12,color:C.muted}}>{p.w}W — {p.l}L</div></div>
                     </div>
                   ))}
                 </div>
                 <div style={{background:`${C.accent}08`,border:`1px solid ${C.accent}22`,borderRadius:14,padding:"12px 16px"}}>
-                  <div style={{fontWeight:800,fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Season 2 Standings</div>
+                  <div style={{fontWeight:800,fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Standings</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:6}}>
                     {sorted.map((p,i)=>(
                       <div key={p.name} style={{display:"flex",alignItems:"center",gap:8,background:C.card,borderRadius:10,padding:"8px 12px",border:`1px solid ${C.border}`}}>
-                        <span style={{fontSize:13,minWidth:20,fontWeight:800,color:C.muted}}>{i+1}</span>
-                        <Avatar name={p.name} size={28}/>
-                        <div>
-                          <div style={{fontSize:12,fontWeight:800}}>{p.name}</div>
-                          <div style={{fontSize:10,color:C.green,fontWeight:700}}>{p.w}W {p.l}L</div>
-                        </div>
+                        <span style={{fontSize:13,minWidth:20,fontWeight:800,color:C.muted}}>{i+1}</span><Avatar name={p.name} size={28}/>
+                        <div><div style={{fontSize:12,fontWeight:800}}>{p.name}</div><div style={{fontSize:10,color:C.green,fontWeight:700}}>{p.w}W {p.l}L</div></div>
                       </div>
                     ))}
                   </div>
@@ -643,30 +674,22 @@ export default function App() {
             </div>
             {(()=>{
               const sorted=Object.values(s1stats).filter(p=>p.played>0).sort((a,b)=>b.w-a.w);
-              return (<>
+              return(<>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12}}>
                   {sorted.slice(0,3).map((p,i)=>(
                     <div key={p.name} style={{background:C.card,border:`1px solid ${[C.gold,C.silver,C.bronze][i]}44`,borderRadius:16,padding:16,display:"flex",alignItems:"center",gap:12}}>
-                      <span style={{fontSize:28}}>{["🥇","🥈","🥉"][i]}</span>
-                      <Avatar name={p.name} size={44}/>
-                      <div>
-                        <div style={{fontWeight:900,fontSize:15,color:[C.gold,C.silver,C.bronze][i]}}>{p.name}</div>
-                        <div style={{fontSize:12,color:C.muted,fontWeight:700}}>{p.w}W — {p.l}L</div>
-                      </div>
+                      <span style={{fontSize:28}}>{["🥇","🥈","🥉"][i]}</span><Avatar name={p.name} size={44}/>
+                      <div><div style={{fontWeight:900,fontSize:15,color:[C.gold,C.silver,C.bronze][i]}}>{p.name}</div><div style={{fontSize:12,color:C.muted}}>{p.w}W — {p.l}L</div></div>
                     </div>
                   ))}
                 </div>
                 <div style={{background:`${C.gold}08`,border:`1px solid ${C.gold}22`,borderRadius:14,padding:"12px 16px"}}>
-                  <div style={{fontWeight:800,fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Season 1 Standings</div>
+                  <div style={{fontWeight:800,fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Standings</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:6}}>
                     {sorted.map((p,i)=>(
                       <div key={p.name} style={{display:"flex",alignItems:"center",gap:8,background:C.card,borderRadius:10,padding:"8px 12px",border:`1px solid ${C.border}`}}>
-                        <span style={{fontSize:13,minWidth:20,fontWeight:800,color:C.muted}}>{i+1}</span>
-                        <Avatar name={p.name} size={28}/>
-                        <div>
-                          <div style={{fontSize:12,fontWeight:800}}>{p.name}</div>
-                          <div style={{fontSize:10,color:C.green,fontWeight:700}}>{p.w}W {p.l}L</div>
-                        </div>
+                        <span style={{fontSize:13,minWidth:20,fontWeight:800,color:C.muted}}>{i+1}</span><Avatar name={p.name} size={28}/>
+                        <div><div style={{fontSize:12,fontWeight:800}}>{p.name}</div><div style={{fontSize:10,color:C.green,fontWeight:700}}>{p.w}W {p.l}L</div></div>
                       </div>
                     ))}
                   </div>
@@ -695,16 +718,14 @@ export default function App() {
               <h2 style={{fontSize:24,fontWeight:900,letterSpacing:"-0.03em",marginBottom:4}}>Player Profiles</h2>
               <p style={{fontSize:13,color:C.muted}}>All-time stats across all seasons</p>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(190px,1fr))",gap:12}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12}}>
               {ALL_PLAYERS.map(p=>{
-                const at=allStats[p]||{w:0,l:0,played:0}, col=pColor(p);
-                return (
+                const at=allStats[p]||{w:0,l:0,played:0},col=pColor(p);
+                return(
                   <div key={p} onClick={()=>setSelPlayer(p)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden",cursor:"pointer"}}
                     onMouseEnter={e=>e.currentTarget.style.borderColor=col}
                     onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
-                    <div style={{height:80,background:`${col}0d`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <Avatar name={p} size={60} ring/>
-                    </div>
+                    <div style={{height:80,background:`${col}0d`,display:"flex",alignItems:"center",justifyContent:"center"}}><Avatar name={p} size={60} ring/></div>
                     <div style={{padding:"12px 14px"}}>
                       <div style={{fontWeight:900,fontSize:14,marginBottom:10}}>{p}</div>
                       <div style={{display:"flex",gap:6}}>
@@ -724,7 +745,7 @@ export default function App() {
         )}
 
         {view==="players"&&selPlayer&&(()=>{
-          const p=selPlayer, col=pColor(p);
+          const p=selPlayer,col=pColor(p);
           const at=allStats[p]||{w:0,l:0,played:0};
           const s1=s1stats[p]||{w:0,l:0,played:0};
           const s2=s2stats[p]||{w:0,l:0,played:0};
@@ -736,7 +757,7 @@ export default function App() {
             if(dplTeam)t+=`\nDPL Team: ${dplTeam.name}`;
             return t;
           };
-          return (
+          return(
             <div style={{display:"flex",flexDirection:"column",gap:16}}>
               <button onClick={()=>setSelPlayer(null)} style={{alignSelf:"flex-start",background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,padding:"6px 14px",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>← Players</button>
               <div style={{background:C.card,border:`1px solid ${col}44`,borderRadius:20,padding:24,position:"relative",overflow:"hidden"}}>
@@ -769,7 +790,7 @@ export default function App() {
                   const onWin=[m.p1,m.p2].includes(p)?m.w===1:m.w===2;
                   const partner=[m.p1,m.p2].includes(p)?[m.p1,m.p2].find(x=>x!==p):[m.p3,m.p4].find(x=>x!==p);
                   const opp=[m.p1,m.p2].includes(p)?`${m.p3} & ${m.p4}`:`${m.p1} & ${m.p2}`;
-                  return (
+                  return(
                     <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 16px",borderBottom:`1px solid ${C.border}22`,background:onWin?"#00e67606":"transparent"}}>
                       <div style={{display:"flex",alignItems:"center",gap:10}}>
                         <span style={{fontSize:14}}>{onWin?"✅":"❌"}</span>
@@ -794,19 +815,17 @@ export default function App() {
               <h2 style={{fontSize:24,fontWeight:900,letterSpacing:"-0.03em",marginBottom:4}}>DPL Teams</h2>
               <p style={{fontSize:13,color:C.muted}}>Season 3 team profiles</p>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:16}}>
-              {TEAMS.map(t=>{
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:16}}>
+              {TEAMS.filter(t=>t.id!=="t5").map(t=>{
                 const ts=standings.find(x=>x.id===t.id);
-                return (
+                return(
                   <div key={t.id} onClick={()=>setSelTeam(t.id)} style={{background:C.card,border:`1px solid ${t.color}33`,borderRadius:20,padding:24,cursor:"pointer"}}
                     onMouseEnter={e=>e.currentTarget.style.borderColor=t.color}
                     onMouseLeave={e=>e.currentTarget.style.borderColor=`${t.color}33`}>
                     <div style={{fontSize:36,marginBottom:12}}>{t.emoji}</div>
                     <div style={{fontWeight:900,fontSize:17,color:t.color,marginBottom:4}}>{t.name}</div>
                     <div style={{fontSize:12,color:C.muted,marginBottom:14}}>{t.p1} & {t.p2}</div>
-                    <div style={{display:"flex",gap:8,marginBottom:14}}>
-                      <Avatar name={t.p1} size={34}/><Avatar name={t.p2} size={34}/>
-                    </div>
+                    <div style={{display:"flex",gap:8,marginBottom:14}}><Avatar name={t.p1} size={34}/><Avatar name={t.p2} size={34}/></div>
                     <div style={{padding:"8px 12px",background:`${t.color}0d`,borderRadius:10,display:"flex",justifyContent:"space-between"}}>
                       <span style={{fontSize:11,color:C.muted}}>Points</span>
                       <span style={{fontSize:14,fontWeight:900,color:t.color}}>{ts?.pts||0}</span>
@@ -821,11 +840,11 @@ export default function App() {
         {view==="teams"&&selTeam&&(()=>{
           const t=TEAMS.find(x=>x.id===selTeam);
           const ts=standings.find(x=>x.id===selTeam);
-          const teamM=schedule.flatMap(r=>r.matches.filter(m=>m.t1===selTeam||m.t2===selTeam));
+          const teamM=schedule.flatMap(r=>r.matches.filter(m=>(m.t1===selTeam||m.t2===selTeam)&&m.t1!=="t5"&&m.t2!=="t5"));
           const played=teamM.filter(m=>m.scores);
           const wins=played.filter(m=>(m.t1===selTeam&&m.result[0]>m.result[1])||(m.t2===selTeam&&m.result[1]>m.result[0]));
           const waTeam=()=>`🎾 *${t.name}*\n${t.p1} & ${t.p2}\nDPL Season 3\nPoints: ${ts?.pts||0} | Sets: ${ts?.sw||0}-${ts?.sl||0}`;
-          return (
+          return(
             <div style={{display:"flex",flexDirection:"column",gap:16}}>
               <button onClick={()=>setSelTeam(null)} style={{alignSelf:"flex-start",background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,padding:"6px 14px",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>← Teams</button>
               <div style={{background:C.card,border:`1px solid ${t.color}44`,borderRadius:20,padding:24,position:"relative",overflow:"hidden"}}>
@@ -842,13 +861,18 @@ export default function App() {
                   <ShareBtn getText={waTeam}/>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
-                  {[{l:"Points",v:ts?.pts||0,c:C.gold},{l:"Played",v:played.length,c:C.accent},{l:"Wins",v:wins.length,c:C.green},{l:"Set Diff",v:(ts?.sw||0)-(ts?.sl||0),c:t.color}].map(st=>(
+                  {[{l:"Points",v:ts?.pts||0,c:C.gold},{l:"Played",v:ts?.played||0,c:C.accent},{l:"Wins",v:wins.length,c:C.green},{l:"Set Diff",v:(ts?.sw||0)-(ts?.sl||0),c:t.color}].map(st=>(
                     <div key={st.l} style={{background:`${st.c}0d`,border:`1px solid ${st.c}22`,borderRadius:12,padding:14,textAlign:"center"}}>
                       <div style={{fontSize:22,fontWeight:900,color:st.c}}>{st.v}</div>
                       <div style={{fontSize:9,color:`${st.c}88`,fontWeight:800,textTransform:"uppercase",marginTop:2}}>{st.l}</div>
                     </div>
                   ))}
                 </div>
+                {selTeam==="t3"&&(
+                  <div style={{marginTop:14,background:"#f9731611",border:"1px solid #f9731633",borderRadius:10,padding:"10px 14px",fontSize:11,color:C.orange}}>
+                    ⚠️ <strong>Round 3 forfeit</strong> — 0 points awarded. Circumserve received 2 automatic points.
+                  </div>
+                )}
               </div>
               <div style={cardStyle}>
                 <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`}}>
@@ -857,7 +881,7 @@ export default function App() {
                 {teamM.map((m,i)=>{
                   const opp=TEAMS.find(x=>x.id===(m.t1===selTeam?m.t2:m.t1));
                   const won=m.scores&&((m.t1===selTeam&&m.result[0]>m.result[1])||(m.t2===selTeam&&m.result[1]>m.result[0]));
-                  return (
+                  return(
                     <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",borderBottom:`1px solid ${C.border}22`,background:won?"#00e67606":"transparent"}}>
                       <div style={{display:"flex",alignItems:"center",gap:10}}>
                         <span style={{fontSize:14}}>{opp?.emoji}</span>
@@ -867,7 +891,7 @@ export default function App() {
                         </div>
                       </div>
                       {m.scores?(
-                        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                        <div style={{display:"flex",gap:6,alignItems:"center"}}>
                           {m.scores.map((sc,si)=><span key={si} style={{fontSize:12,fontWeight:800,background:C.surface,borderRadius:6,padding:"2px 8px"}}>{sc}</span>)}
                           <span style={{fontSize:11,fontWeight:800,color:won?C.green:C.red,background:won?"#00e67611":"#ff525211",borderRadius:8,padding:"3px 10px"}}>{won?"WIN":"LOSS"}</span>
                         </div>
