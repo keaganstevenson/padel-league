@@ -32,8 +32,8 @@ const SCHEDULE = [
     { t1:"t2", t2:"t5", scores:["7-6","1-6","7-5"], result:[2,1], forfeit:{ team:"t3", note:"One Nice Guy forfeited — substituted by The Benchwarmers (Nathan & Brett). Circumserve awarded 2 points automatically." } },
   ]},
   { round:4, date:"Tue, 05 Aug 2026", matches:[
-    { t1:"t1", t2:"t3", scores:null },
-    { t1:"t2", t2:"t4", scores:null },
+    { t1:"t2", t2:"t4", scores:["6-3","6-4","7-6"], result:[2,0] },
+    { t1:"t3", t2:"t1", scores:["6-7","6-1","6-1"], result:[2,1] },
   ]},
   { round:5, date:"Tue, 12 Aug 2026", matches:[
     { t1:"t3", t2:"t2", scores:null },
@@ -101,7 +101,8 @@ const SEASON3 = [
   { week:2, date:"21 Jul 2026", p1:"John",    p2:"Michael", p3:"Brandon", p4:"Graeme",  s:[6,3,7,5,6,4], w:1 },
   { week:2, date:"21 Jul 2026", p1:"Darren",  p2:"Connor",  p3:"Byron",   p4:"Keagan",  s:[6,4,7,5,7,5], w:1 },
   { week:3, date:"30 Jul 2026", p1:"Darren",  p2:"Connor",  p3:"Brandon", p4:"Graeme",  s:[6,3,6,3,6,3], w:1 },
-  { week:3, date:"30 Jul 2026", p1:"Byron",   p2:"Keagan",  p3:"Nathan",  p4:"Brett",   s:[7,6,1,6,7,5], w:1 },
+  { week:4, date:"05 Aug 2026", p1:"Byron",   p2:"Keagan",  p3:"Darren",  p4:"Connor",  s:[6,3,6,4,7,6], w:1 },
+  { week:4, date:"05 Aug 2026", p1:"Michael", p2:"John",    p3:"Brandon", p4:"Graeme",  s:[6,7,6,1,6,1], w:1 },
 ];
 
 const ALL_PLAYERS = ["Brandon","Brett","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
@@ -236,7 +237,7 @@ export default function App(){
   const [newFixture,setNewFixture]=useState({date:"",time:"",venue:"",teams:""});
   const [showAddFixture,setShowAddFixture]=useState(false);
 
-  const TODAY=new Date("2026-07-30");
+  const TODAY=new Date("2026-08-05");
   const activeFixtures=fixtures.filter(f=>new Date(f.date)>TODAY);
 
   const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
@@ -365,7 +366,7 @@ export default function App(){
                   </div>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,minWidth:200}}>
-                  {[{v:"52",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"10",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
+                  {[{v:"54",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"10",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
                     <div key={s.l} style={{background:`${s.c}0d`,border:`1px solid ${s.c}22`,borderRadius:14,padding:"16px 12px",textAlign:"center"}}>
                       <div style={{fontSize:30,fontWeight:900,color:s.c,lineHeight:1}}>{s.v}</div>
                       <div style={{fontSize:10,color:`${s.c}99`,fontWeight:800,textTransform:"uppercase",marginTop:4}}>{s.l}</div>
