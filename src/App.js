@@ -36,8 +36,8 @@ const SCHEDULE = [
     { t1:"t3", t2:"t1", scores:["6-7","6-1","6-1"], result:[2,1] },
   ]},
   { round:5, date:"Tue, 12 Aug 2026", matches:[
-    { t1:"t3", t2:"t2", scores:null },
-    { t1:"t1", t2:"t4", scores:null },
+    { t1:"t4", t2:"t1", scores:["7-6","6-4","7-6"], result:[2,0] },
+    { t1:"t3", t2:"t2", scores:["6-1","6-2","7-5"], result:[2,0] },
   ]},
   { round:6, date:"Tue, 19 Aug 2026", matches:[
     { t1:"t3", t2:"t4", scores:null },
@@ -103,6 +103,8 @@ const SEASON3 = [
   { week:3, date:"30 Jul 2026", p1:"Darren",  p2:"Connor",  p3:"Brandon", p4:"Graeme",  s:[6,3,6,3,6,3], w:1 },
   { week:4, date:"05 Aug 2026", p1:"Byron",   p2:"Keagan",  p3:"Darren",  p4:"Connor",  s:[6,3,6,4,7,6], w:1 },
   { week:4, date:"05 Aug 2026", p1:"Michael", p2:"John",    p3:"Brandon", p4:"Graeme",  s:[6,7,6,1,6,1], w:1 },
+  { week:5, date:"12 Aug 2026", p1:"Darren",  p2:"Connor",  p3:"Brandon", p4:"Graeme",  s:[7,6,6,4,7,6], w:1 },
+  { week:5, date:"12 Aug 2026", p1:"Michael", p2:"John",    p3:"Byron",   p4:"Keagan",  s:[6,1,6,2,7,5], w:1 },
 ];
 
 const ALL_PLAYERS = ["Brandon","Brett","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
@@ -237,7 +239,7 @@ export default function App(){
   const [newFixture,setNewFixture]=useState({date:"",time:"",venue:"",teams:""});
   const [showAddFixture,setShowAddFixture]=useState(false);
 
-  const TODAY=new Date("2026-08-05");
+  const TODAY=new Date("2026-08-12");
   const activeFixtures=fixtures.filter(f=>new Date(f.date)>TODAY);
 
   const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
@@ -366,7 +368,7 @@ export default function App(){
                   </div>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,minWidth:200}}>
-                  {[{v:"54",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"10",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
+                  {[{v:"56",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"10",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
                     <div key={s.l} style={{background:`${s.c}0d`,border:`1px solid ${s.c}22`,borderRadius:14,padding:"16px 12px",textAlign:"center"}}>
                       <div style={{fontSize:30,fontWeight:900,color:s.c,lineHeight:1}}>{s.v}</div>
                       <div style={{fontSize:10,color:`${s.c}99`,fontWeight:800,textTransform:"uppercase",marginTop:4}}>{s.l}</div>
@@ -506,6 +508,60 @@ export default function App(){
               <div>
                 <div style={{fontWeight:800,fontSize:13,color:C.orange,marginBottom:2}}>Round 3 Forfeit — One Nice Guy</div>
                 <div style={{fontSize:12,color:C.muted,lineHeight:1.6}}>One Nice Guy were unable to field their team on 30 Jul 2026. Substitutes Nathan & Brett played as <strong style={{color:"#a78bfa"}}>The Benchwarmers</strong> in their place. <strong style={{color:C.gold}}>Circumserve were awarded 2 points automatically</strong>. One Nice Guy receive 0 points for this round.</div>
+              </div>
+            </div>
+
+            {/* Full League Table */}
+            <div style={cardStyle}>
+              <div style={{padding:"12px 20px",borderBottom:`1px solid ${C.border}`,background:`${C.gold}0d`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:11,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:"0.08em"}}>📊 League Table</span>
+                <span style={{fontSize:10,color:C.muted}}>After Round 4</span>
+              </div>
+              <div style={{overflowX:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",minWidth:500}}>
+                  <thead>
+                    <tr style={{borderBottom:`2px solid ${C.border}`,background:C.surface}}>
+                      {[{l:"Pos",a:"center"},{l:"Team",a:"left"},{l:"Played",a:"center"},{l:"Wins",a:"center"},{l:"Losses",a:"center"},{l:"Points",a:"center"}].map(h=>(
+                        <th key={h.l} style={{padding:"12px 14px",fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",textAlign:h.a}}>{h.l}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {standings.map((t,i)=>{
+                      const wins=schedule.flatMap(r=>r.matches).filter(m=>m.scores&&((m.t1===t.id&&m.result[0]>m.result[1])||(m.t2===t.id&&m.result&&m.result[1]>m.result[0]))).length;
+                      const losses=t.played-wins;
+                      const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":null;
+                      return(
+                        <tr key={t.id} style={{borderBottom:`1px solid ${C.border}33`,background:i===0?`${t.color}08`:"transparent",transition:"background 0.2s"}}
+                          onMouseEnter={e=>e.currentTarget.style.background=`${t.color}0d`}
+                          onMouseLeave={e=>e.currentTarget.style.background=i===0?`${t.color}08`:"transparent"}>
+                          <td style={{padding:"14px",textAlign:"center"}}>
+                            {medal?<span style={{fontSize:20}}>{medal}</span>:<span style={{fontSize:13,fontWeight:900,color:C.muted}}>{i+1}</span>}
+                          </td>
+                          <td style={{padding:"14px 14px"}}>
+                            <div style={{display:"flex",alignItems:"center",gap:10}}>
+                              <div style={{width:32,height:32,borderRadius:8,background:`${t.color}22`,border:`1px solid ${t.color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{t.emoji}</div>
+                              <div>
+                                <div style={{fontWeight:900,fontSize:14,color:t.color}}>{t.name}</div>
+                                <div style={{fontSize:10,color:C.muted,marginTop:1}}>{t.p1} & {t.p2}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{textAlign:"center",fontSize:14,fontWeight:700,color:C.muted,padding:"14px"}}>{t.played}</td>
+                          <td style={{textAlign:"center",padding:"14px"}}>
+                            <span style={{fontSize:14,fontWeight:900,color:C.green,background:"#00e67611",borderRadius:8,padding:"3px 12px"}}>{wins}</span>
+                          </td>
+                          <td style={{textAlign:"center",padding:"14px"}}>
+                            <span style={{fontSize:14,fontWeight:900,color:C.red,background:"#ff525211",borderRadius:8,padding:"3px 12px"}}>{losses}</span>
+                          </td>
+                          <td style={{textAlign:"center",padding:"14px"}}>
+                            <span style={{fontSize:18,fontWeight:900,color:C.gold}}>{t.pts}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
 
