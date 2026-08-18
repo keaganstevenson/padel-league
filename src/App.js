@@ -40,18 +40,14 @@ const SCHEDULE = [
     { t1:"t3", t2:"t2", scores:["6-1","6-2","7-5"], result:[2,0] },
   ]},
   { round:6, date:"Tue, 19 Aug 2026", matches:[
-    { t1:"t3", t2:"t4", scores:null },
-    { t1:"t1", t2:"t2", scores:null },
+    { t1:"t2", t2:"t1", scores:["6-4","7-6","6-3"], result:[2,0] },
+    { t1:"t3", t2:"t4", scores:["6-3","6-1","6-3"], result:[2,0] },
   ]},
 ];
 
 const UPCOMING_FIXTURES = [
-  { id:"f4", date:"2026-08-05", time:"18:30", venue:"Africa Padel KCC", teams:"Overhead Casualties vs One Nice Guy" },
-  { id:"f5", date:"2026-08-05", time:"18:30", venue:"Africa Padel KCC", teams:"Circumserve vs EFF" },
-  { id:"f6", date:"2026-08-12", time:"18:30", venue:"Africa Padel KCC", teams:"One Nice Guy vs Circumserve" },
-  { id:"f7", date:"2026-08-12", time:"18:30", venue:"Africa Padel KCC", teams:"Overhead Casualties vs EFF" },
-  { id:"f8", date:"2026-08-19", time:"18:30", venue:"Africa Padel KCC", teams:"One Nice Guy vs EFF" },
-  { id:"f9", date:"2026-08-19", time:"18:30", venue:"Africa Padel KCC", teams:"Overhead Casualties vs Circumserve" },
+  { id:"sf1", date:"2026-08-26", time:"18:30", venue:"Africa Padel KCC", teams:"🏆 SEMI A — One Nice Guy vs Overhead Casualties" },
+  { id:"sf2", date:"2026-08-26", time:"18:30", venue:"Africa Padel KCC", teams:"🏆 SEMI B — EFF vs Circumserve" },
 ];
 
 const SEASON1 = [
@@ -104,7 +100,8 @@ const SEASON3 = [
   { week:4, date:"05 Aug 2026", p1:"Byron",   p2:"Keagan",  p3:"Darren",  p4:"Connor",  s:[6,3,6,4,7,6], w:1 },
   { week:4, date:"05 Aug 2026", p1:"Michael", p2:"John",    p3:"Brandon", p4:"Graeme",  s:[6,7,6,1,6,1], w:1 },
   { week:5, date:"12 Aug 2026", p1:"Darren",  p2:"Connor",  p3:"Brandon", p4:"Graeme",  s:[7,6,6,4,7,6], w:1 },
-  { week:5, date:"12 Aug 2026", p1:"Michael", p2:"John",    p3:"Byron",   p4:"Keagan",  s:[6,1,6,2,7,5], w:1 },
+  { week:6, date:"19 Aug 2026", p1:"Byron",   p2:"Keagan",  p3:"Brandon", p4:"Graeme",  s:[6,4,7,6,6,3], w:1 },
+  { week:6, date:"19 Aug 2026", p1:"Michael", p2:"John",    p3:"Darren",  p4:"Connor",  s:[6,3,6,1,6,3], w:1 },
 ];
 
 const ALL_PLAYERS = ["Brandon","Brett","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
@@ -239,7 +236,7 @@ export default function App(){
   const [newFixture,setNewFixture]=useState({date:"",time:"",venue:"",teams:""});
   const [showAddFixture,setShowAddFixture]=useState(false);
 
-  const TODAY=new Date("2026-08-12");
+  const TODAY=new Date("2026-08-19");
   const activeFixtures=fixtures.filter(f=>new Date(f.date)>TODAY);
 
   const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
@@ -368,12 +365,54 @@ export default function App(){
                   </div>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,minWidth:200}}>
-                  {[{v:"56",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"10",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
+                  {[{v:"58",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"10",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
                     <div key={s.l} style={{background:`${s.c}0d`,border:`1px solid ${s.c}22`,borderRadius:14,padding:"16px 12px",textAlign:"center"}}>
                       <div style={{fontSize:30,fontWeight:900,color:s.c,lineHeight:1}}>{s.v}</div>
                       <div style={{fontSize:10,color:`${s.c}99`,fontWeight:800,textTransform:"uppercase",marginTop:4}}>{s.l}</div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+
+            {/* SEMI FINALS BANNER */}
+            <div style={{borderRadius:20,overflow:"hidden",position:"relative",background:`linear-gradient(135deg,#7c3aed22,#ffd70022)`,border:`1px solid ${C.gold}44`}}>
+              <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 0% 50%,#7c3aed0d,transparent 60%),radial-gradient(ellipse at 100% 50%,#ffd7000d,transparent 60%)",pointerEvents:"none"}}/>
+              <div style={{padding:"28px 24px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+                  <span style={{fontSize:28}}>⚡</span>
+                  <div>
+                    <div style={{fontSize:10,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:2}}>Pool Stage Complete</div>
+                    <h3 style={{fontSize:22,fontWeight:900,letterSpacing:"-0.03em",color:C.text}}>Semi-Finals Are Here</h3>
+                  </div>
+                </div>
+                <p style={{fontSize:13,color:C.muted,marginBottom:20}}>26 August 2026 · Africa Padel KCC · 18:30</p>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                  {[
+                    {label:"Semi A",t1:{...TEAMS.find(t=>t.id==="t3")},t2:{...TEAMS.find(t=>t.id==="t1")},color:"#a78bfa"},
+                    {label:"Semi B",t1:{...TEAMS.find(t=>t.id==="t4")},t2:{...TEAMS.find(t=>t.id==="t2")},color:C.gold},
+                  ].map(sf=>(
+                    <div key={sf.label} style={{background:`${sf.color}11`,border:`1px solid ${sf.color}44`,borderRadius:14,padding:"14px 16px"}}>
+                      <div style={{fontSize:10,fontWeight:800,color:sf.color,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>{sf.label}</div>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <div style={{flex:1,textAlign:"center"}}>
+                          <div style={{fontSize:20,marginBottom:4}}>{sf.t1.emoji}</div>
+                          <div style={{fontSize:12,fontWeight:900,color:sf.t1.color}}>{sf.t1.name}</div>
+                          <div style={{fontSize:10,color:C.muted}}>{sf.t1.p1} & {sf.t1.p2}</div>
+                        </div>
+                        <div style={{fontSize:13,fontWeight:900,color:C.muted,padding:"0 6px"}}>vs</div>
+                        <div style={{flex:1,textAlign:"center"}}>
+                          <div style={{fontSize:20,marginBottom:4}}>{sf.t2.emoji}</div>
+                          <div style={{fontSize:12,fontWeight:900,color:sf.t2.color}}>{sf.t2.name}</div>
+                          <div style={{fontSize:10,color:C.muted}}>{sf.t2.p1} & {sf.t2.p2}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{marginTop:14,display:"flex",gap:10,flexWrap:"wrap"}}>
+                  <button onClick={()=>setView("upcoming")} style={{padding:"9px 20px",background:C.gold,border:"none",borderRadius:10,color:"#0a0a0f",fontWeight:900,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>View Schedule →</button>
+                  <button onClick={()=>setView("dpl")} style={{padding:"9px 20px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.text,fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Pool Standings</button>
                 </div>
               </div>
             </div>
@@ -502,14 +541,7 @@ export default function App(){
               <ShareBtn getText={waDPL}/>
             </div>
 
-            {/* Forfeit notice */}
-            <div style={{background:"#f9731611",border:"1px solid #f9731644",borderRadius:14,padding:"12px 16px",display:"flex",gap:10,alignItems:"flex-start"}}>
-              <span style={{fontSize:18,flexShrink:0}}>⚠️</span>
-              <div>
-                <div style={{fontWeight:800,fontSize:13,color:C.orange,marginBottom:2}}>Round 3 Forfeit — One Nice Guy</div>
-                <div style={{fontSize:12,color:C.muted,lineHeight:1.6}}>One Nice Guy were unable to field their team on 30 Jul 2026. Substitutes Nathan & Brett played as <strong style={{color:"#a78bfa"}}>The Benchwarmers</strong> in their place. <strong style={{color:C.gold}}>Circumserve were awarded 2 points automatically</strong>. One Nice Guy receive 0 points for this round.</div>
-              </div>
-            </div>
+
 
             {/* Full League Table */}
             <div style={cardStyle}>
@@ -595,11 +627,18 @@ export default function App(){
                   <span style={{fontSize:11,fontWeight:800,color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em"}}>⚡ Knockout Stage</span>
                 </div>
                 <div style={{padding:16,display:"flex",flexDirection:"column",gap:10}}>
-                  <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Semi-Finals — TBD</div>
-                  {[{l:"Semi A",d:"1st vs 4th Place"},{l:"Semi B",d:"2nd vs 3rd Place"}].map(s=>(
-                    <div key={s.l} style={{background:"#7c3aed11",border:"1px solid #7c3aed33",borderRadius:10,padding:12}}>
-                      <span style={{fontSize:11,fontWeight:800,color:"#a78bfa"}}>{s.l}</span>
-                      <div style={{fontSize:12,color:C.muted,marginTop:2}}>{s.d}</div>
+                  <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Semi-Finals — 26 Aug 2026</div>
+                  {[
+                    {l:"Semi A",t1:TEAMS.find(t=>t.id==="t3"),t2:TEAMS.find(t=>t.id==="t1")},
+                    {l:"Semi B",t1:TEAMS.find(t=>t.id==="t4"),t2:TEAMS.find(t=>t.id==="t2")},
+                  ].map(sf=>(
+                    <div key={sf.l} style={{background:"#7c3aed11",border:"1px solid #7c3aed33",borderRadius:10,padding:12}}>
+                      <span style={{fontSize:11,fontWeight:800,color:"#a78bfa"}}>{sf.l}</span>
+                      <div style={{fontSize:12,color:C.text,marginTop:4,fontWeight:700}}>
+                        <span style={{color:sf.t1.color}}>{sf.t1.emoji} {sf.t1.name}</span>
+                        <span style={{color:C.muted,margin:"0 6px"}}>vs</span>
+                        <span style={{color:sf.t2.color}}>{sf.t2.emoji} {sf.t2.name}</span>
+                      </div>
                     </div>
                   ))}
                   <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginTop:4}}>Finals — TBD</div>
