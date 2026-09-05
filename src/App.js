@@ -39,16 +39,13 @@ const SCHEDULE = [
     { t1:"t4", t2:"t1", scores:["7-6","6-4","7-6"], result:[2,0] },
     { t1:"t3", t2:"t2", scores:["6-1","6-2","7-5"], result:[2,0] },
   ]},
-  { round:"SF", date:"Wed, 26 Aug 2026", matches:[
-    { t1:"t2", t2:"t4", scores:["7-6","6-4"],     result:[2,0] },
-    { t1:"t1", t2:"t3", scores:["7-5","6-4","6-4"], result:[2,1] },
+  { round:"GF", date:"Wed, 02 Sep 2026", matches:[
+    { t1:"t2", t2:"t1", scores:["6-4","4-6","6-3"], result:[2,1] },
+    { t1:"t3", t2:"t4", scores:["7-6","6-7","6-4"], result:[2,1] },
   ]},
 ];
 
-const UPCOMING_FIXTURES = [
-  { id:"gf1", date:"2026-09-02", time:"18:30", venue:"Africa Padel KCC", teams:"🏆 GRAND FINAL — Circumserve vs Overhead Casualties" },
-  { id:"tb1", date:"2026-09-02", time:"18:30", venue:"Africa Padel KCC", teams:"💩 TOILET BOWL — EFF vs One Nice Guy" },
-];
+const UPCOMING_FIXTURES = [];
 
 const SEASON1 = [
   { week:1,  date:"03 Mar 2026", p1:"Keagan",  p2:"Brandon", p3:"Connor",  p4:"Byron",   s:[6,1,7,6,3,6], w:1 },
@@ -102,7 +99,8 @@ const SEASON3 = [
   { week:5, date:"12 Aug 2026", p1:"Darren",  p2:"Connor",  p3:"Brandon", p4:"Graeme",  s:[7,6,6,4,7,6], w:1 },
   { week:6, date:"19 Aug 2026", p1:"Byron",   p2:"Keagan",  p3:"Brandon", p4:"Graeme",  s:[6,4,7,6,6,3], w:1 },
   { week:7, date:"26 Aug 2026", p1:"Byron",   p2:"Keagan",  p3:"Darren",  p4:"Connor",  s:[7,6,6,4,0,0], w:1 },
-  { week:7, date:"26 Aug 2026", p1:"Brandon", p2:"Graeme",  p3:"Michael", p4:"John",    s:[7,5,6,4,6,4], w:1 },
+  { week:8, date:"02 Sep 2026", p1:"Byron",   p2:"Keagan",  p3:"Brandon", p4:"Graeme",  s:[6,4,4,6,6,3], w:1 },
+  { week:8, date:"02 Sep 2026", p1:"Michael", p2:"John",    p3:"Darren",  p4:"Connor",  s:[7,6,6,7,6,4], w:1 },
 ];
 
 const ALL_PLAYERS = ["Brandon","Brett","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
@@ -237,7 +235,7 @@ export default function App(){
   const [newFixture,setNewFixture]=useState({date:"",time:"",venue:"",teams:""});
   const [showAddFixture,setShowAddFixture]=useState(false);
 
-  const TODAY=new Date("2026-08-27");
+  const TODAY=new Date("2026-09-05");
   const activeFixtures=fixtures.filter(f=>new Date(f.date)>TODAY);
 
   const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
@@ -366,7 +364,7 @@ export default function App(){
                   </div>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,minWidth:200}}>
-                  {[{v:"60",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"10",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
+                  {[{v:"62",l:"Matches",c:C.accent},{v:"3",l:"Seasons",c:C.gold},{v:"10",l:"Players",c:C.green},{v:"4",l:"DPL Teams",c:"#a78bfa"}].map(s=>(
                     <div key={s.l} style={{background:`${s.c}0d`,border:`1px solid ${s.c}22`,borderRadius:14,padding:"16px 12px",textAlign:"center"}}>
                       <div style={{fontSize:30,fontWeight:900,color:s.c,lineHeight:1}}>{s.v}</div>
                       <div style={{fontSize:10,color:`${s.c}99`,fontWeight:800,textTransform:"uppercase",marginTop:4}}>{s.l}</div>
@@ -376,59 +374,55 @@ export default function App(){
               </div>
             </div>
 
-            {/* GRAND FINAL BANNER */}
-            <div style={{borderRadius:20,overflow:"hidden",position:"relative",background:`linear-gradient(135deg,#ffd70022,#ff520022)`,border:`2px solid ${C.gold}66`}}>
-              <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 0% 50%,#ffd70015,transparent 60%),radial-gradient(ellipse at 100% 50%,#ff525215,transparent 60%)",pointerEvents:"none"}}/>
-              <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,#ffd700,#ff5252,#ffd700)`}}/>
-              <div style={{padding:"28px 24px",position:"relative",zIndex:1}}>
-                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
-                  <span style={{fontSize:32}}>🏆</span>
-                  <div>
-                    <div style={{fontSize:10,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:2}}>The Final Showdown</div>
-                    <h3 style={{fontSize:26,fontWeight:900,letterSpacing:"-0.03em",color:C.text}}>Grand Final & Toilet Bowl</h3>
-                  </div>
-                </div>
-                <p style={{fontSize:13,color:C.muted,marginBottom:20}}>2 September 2026 · Africa Padel KCC · 18:30</p>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-                  {/* Grand Final */}
-                  <div style={{background:`${C.gold}11`,border:`1px solid ${C.gold}55`,borderRadius:14,padding:"14px 16px"}}>
-                    <div style={{fontSize:10,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>🏆 Grand Final</div>
+            {/* CHAMPIONS BANNER */}
+            <div style={{borderRadius:20,overflow:"hidden",position:"relative",border:`2px solid ${C.gold}`}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,#ffd70033,#f59e0b11,#ffd70033)",pointerEvents:"none"}}/>
+              <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 0%,#ffd70022,transparent 70%)",pointerEvents:"none"}}/>
+              <div style={{position:"absolute",top:0,left:0,right:0,height:4,background:`linear-gradient(90deg,#ffd700,#ffffff,#ffd700)`}}/>
+              <div style={{padding:"32px 24px",position:"relative",zIndex:1,textAlign:"center"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🏆</div>
+                <div style={{fontSize:10,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:"0.2em",marginBottom:6}}>Season 3 Champions</div>
+                <h3 style={{fontSize:32,fontWeight:900,letterSpacing:"-0.04em",color:C.gold,marginBottom:4}}>Circumserve</h3>
+                <p style={{fontSize:14,color:C.muted,marginBottom:20}}>Byron & Keagan · Grand Final Winners</p>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
+                  <div style={{background:`${C.gold}11`,border:`1px solid ${C.gold}44`,borderRadius:14,padding:"14px 16px"}}>
+                    <div style={{fontSize:10,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>🏆 Grand Final</div>
                     <div style={{display:"flex",alignItems:"center",gap:4}}>
                       <div style={{flex:1,textAlign:"center"}}>
-                        <div style={{fontSize:24,marginBottom:3}}>🌀</div>
-                        <div style={{fontSize:12,fontWeight:900,color:"#ffd700",lineHeight:1.2}}>Circumserve</div>
-                        <div style={{fontSize:9,color:C.muted,marginTop:2}}>Byron & Keagan</div>
+                        <div style={{fontSize:22,marginBottom:2}}>🌀</div>
+                        <div style={{fontSize:11,fontWeight:900,color:"#ffd700"}}>Circumserve</div>
+                        <div style={{fontSize:9,color:C.muted}}>Byron & Keagan</div>
+                        <div style={{fontSize:11,fontWeight:800,color:C.green,marginTop:4}}>Winner ✓</div>
                       </div>
                       <div style={{fontSize:11,fontWeight:900,color:C.muted,padding:"0 4px"}}>vs</div>
                       <div style={{flex:1,textAlign:"center"}}>
-                        <div style={{fontSize:24,marginBottom:3}}>💥</div>
-                        <div style={{fontSize:12,fontWeight:900,color:"#00d4ff",lineHeight:1.2}}>Overhead Casualties</div>
-                        <div style={{fontSize:9,color:C.muted,marginTop:2}}>Brandon & Graeme</div>
+                        <div style={{fontSize:22,marginBottom:2}}>💥</div>
+                        <div style={{fontSize:11,fontWeight:900,color:"#00d4ff"}}>Overhead Casualties</div>
+                        <div style={{fontSize:9,color:C.muted}}>Brandon & Graeme</div>
+                        <div style={{fontSize:11,fontWeight:700,color:C.muted,marginTop:4}}>6-4, 4-6, 6-3</div>
                       </div>
                     </div>
                   </div>
-                  {/* Toilet Bowl */}
                   <div style={{background:"#ff525211",border:"1px solid #ff525233",borderRadius:14,padding:"14px 16px"}}>
-                    <div style={{fontSize:10,fontWeight:800,color:"#ff5252",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>💩 Toilet Bowl</div>
+                    <div style={{fontSize:10,fontWeight:800,color:"#ff5252",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>💩 Toilet Bowl</div>
                     <div style={{display:"flex",alignItems:"center",gap:4}}>
                       <div style={{flex:1,textAlign:"center"}}>
-                        <div style={{fontSize:24,marginBottom:3}}>🔥</div>
-                        <div style={{fontSize:12,fontWeight:900,color:"#ff5252",lineHeight:1.2}}>EFF</div>
-                        <div style={{fontSize:9,color:C.muted,marginTop:2}}>Darren & Connor</div>
+                        <div style={{fontSize:22,marginBottom:2}}>😇</div>
+                        <div style={{fontSize:11,fontWeight:900,color:"#00e676"}}>One Nice Guy</div>
+                        <div style={{fontSize:9,color:C.muted}}>Michael & John</div>
+                        <div style={{fontSize:11,fontWeight:800,color:C.green,marginTop:4}}>Winner ✓</div>
                       </div>
                       <div style={{fontSize:11,fontWeight:900,color:C.muted,padding:"0 4px"}}>vs</div>
                       <div style={{flex:1,textAlign:"center"}}>
-                        <div style={{fontSize:24,marginBottom:3}}>😇</div>
-                        <div style={{fontSize:12,fontWeight:900,color:"#00e676",lineHeight:1.2}}>One Nice Guy</div>
-                        <div style={{fontSize:9,color:C.muted,marginTop:2}}>Michael & John</div>
+                        <div style={{fontSize:22,marginBottom:2}}>🔥</div>
+                        <div style={{fontSize:11,fontWeight:900,color:"#ff5252"}}>EFF</div>
+                        <div style={{fontSize:9,color:C.muted}}>Darren & Connor</div>
+                        <div style={{fontSize:11,fontWeight:700,color:C.muted,marginTop:4}}>7-6, 6-7, 6-4</div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div style={{marginTop:14,display:"flex",gap:10,flexWrap:"wrap"}}>
-                  <button onClick={()=>setView("upcoming")} style={{padding:"9px 20px",background:C.gold,border:"none",borderRadius:10,color:"#0a0a0f",fontWeight:900,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>View Schedule →</button>
-                  <button onClick={()=>setView("dpl")} style={{padding:"9px 20px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:10,color:C.text,fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Full Results</button>
-                </div>
+                <button onClick={()=>setView("dpl")} style={{padding:"10px 28px",background:C.gold,border:"none",borderRadius:12,color:"#0a0a0f",fontWeight:900,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>View Full Season 3 Results →</button>
               </div>
             </div>
 
@@ -656,21 +650,19 @@ export default function App(){
                       </div>
                     </div>
                   ))}
-                  <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginTop:4}}>Finals — 2 Sep 2026</div>
-                  <div style={{background:`${C.gold}11`,border:`1px solid ${C.gold}33`,borderRadius:10,padding:12}}>
-                    <div style={{fontSize:11,fontWeight:800,color:C.gold}}>🏆 Grand Final</div>
+                  <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginTop:4}}>Finals — 2 Sep 2026 ✅</div>
+                  <div style={{background:`${C.gold}22`,border:`2px solid ${C.gold}`,borderRadius:10,padding:12}}>
+                    <div style={{fontSize:11,fontWeight:800,color:C.gold}}>🏆 Grand Final — CHAMPIONS</div>
                     <div style={{fontSize:12,color:C.text,marginTop:4,fontWeight:700}}>
                       <span style={{color:"#ffd700"}}>🌀 Circumserve</span>
-                      <span style={{color:C.muted,margin:"0 6px"}}>vs</span>
-                      <span style={{color:"#00d4ff"}}>💥 Overhead Casualties</span>
+                      <span style={{color:C.green,fontSize:10,marginLeft:6,fontWeight:800}}>WON 6-4, 4-6, 6-3</span>
                     </div>
                   </div>
                   <div style={{background:"#ff525211",border:"1px solid #ff525233",borderRadius:10,padding:12}}>
                     <div style={{fontSize:11,fontWeight:800,color:"#ff5252"}}>💩 Toilet Bowl</div>
                     <div style={{fontSize:12,color:C.text,marginTop:4,fontWeight:700}}>
-                      <span style={{color:"#ff5252"}}>🔥 EFF</span>
-                      <span style={{color:C.muted,margin:"0 6px"}}>vs</span>
                       <span style={{color:"#00e676"}}>😇 One Nice Guy</span>
+                      <span style={{color:C.green,fontSize:10,marginLeft:6,fontWeight:800}}>WON 7-6, 6-7, 6-4</span>
                     </div>
                   </div>
                 </div>
