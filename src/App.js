@@ -325,7 +325,7 @@ export default function App(){
   const card={background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden"};
 
   const waS4=()=>{
-    let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*⚡ The Thunderdome — Season 4 Standings*\n\n`;
+    let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*⚡ Padelmaxxing — Season 4 Standings*\n\n`;
     s4stats.filter(p=>p.played>0).forEach((p,i)=>t+=`${i+1}. ${p.name} — ${p.pts}pts (${p.wins}W ${p.losses}L)\n`);
     if(lastWeek){
       t+=`\n📅 *Week ${lastWeek.week} Results*\n`;
@@ -402,7 +402,7 @@ export default function App(){
                   {LOGO_BANNER_URL&&<img src={LOGO_BANNER_URL} alt="DPL" style={{maxWidth:"100%",height:"auto",maxHeight:80,marginBottom:16,display:"block"}}/>}
                   <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#f9731611",border:"1px solid #f9731633",borderRadius:99,padding:"5px 14px",marginBottom:12}}>
                     <span style={{width:7,height:7,borderRadius:"50%",background:C.s4accent,display:"inline-block",boxShadow:`0 0 8px ${C.s4accent}`}}/>
-                    <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.1em"}}>⚡ The Thunderdome — Season 4 Live</span>
+                    <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.1em"}}>⚡ Padelmaxxing — Season 4 Live</span>
                   </div>
                   <h1 style={{fontSize:38,fontWeight:900,lineHeight:1.05,letterSpacing:"-0.04em",marginBottom:10}}>
                     <span style={{background:"linear-gradient(135deg,#f97316,#ffd700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>DEGENERATES</span>
@@ -427,7 +427,7 @@ export default function App(){
             {/* S4 Leaderboard snapshot */}
             <div style={{...card}}>
               <div style={{padding:"12px 18px",borderBottom:`1px solid ${C.border}`,background:`${C.s4accent}0d`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>⚡ The Thunderdome — Current Standings</span>
+                <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>⚡ Padelmaxxing — Current Standings</span>
                 <button onClick={()=>setView("s4")} style={{fontSize:11,color:C.s4accent,background:"transparent",border:"none",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}>Full table →</button>
               </div>
               <div style={{padding:"8px 0"}}>
@@ -471,7 +471,7 @@ export default function App(){
                 <div>
                   <div style={{fontSize:10,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:6}}>Season 4 · Individual Format</div>
                   <h2 style={{fontSize:28,fontWeight:900,letterSpacing:"-0.04em",marginBottom:4}}>
-                    <span style={{background:"linear-gradient(135deg,#f97316,#ffd700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>⚡ The Thunderdome</span>
+                    <span style={{background:"linear-gradient(135deg,#f97316,#ffd700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>⚡ Padelmaxxing</span>
                   </h2>
                   <p style={{fontSize:13,color:C.muted}}>7 weeks pool play · Top 4 advance · Semi-Finals · Grand Final</p>
                   <p style={{fontSize:11,color:C.muted,marginTop:4}}>Scoring: Win 3-0 = 3pts · 2-1 = 2pts · 1-2 = 1pt · 0-3 = 0pts</p>
@@ -605,7 +605,7 @@ export default function App(){
                 <div>
                   <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>Live Schedule</div>
                   <h2 style={{fontSize:24,fontWeight:900,letterSpacing:"-0.03em"}}>Upcoming Games</h2>
-                  <p style={{fontSize:13,color:C.muted,marginTop:4}}>Season 4 — The Thunderdome</p>
+                  <p style={{fontSize:13,color:C.muted,marginTop:4}}>Season 4 — Padelmaxxing</p>
                 </div>
                 {adminMode&&<button onClick={()=>setShowAddFixture(!showAddFixture)} style={{padding:"8px 18px",background:C.orange,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>+ Add Fixture</button>}
               </div>
