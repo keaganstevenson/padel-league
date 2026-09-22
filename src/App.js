@@ -18,8 +18,8 @@ const S4_SCHEDULE = [
     { p1:"Keagan",  p2:"Michael", p3:"Connor",  p4:"John",    scores:["6-3","7-6","6-3"], result:[3,0], w:1 },
   ]},
   { week:2, date:"15 Sep 2026", matches:[
-    { p1:"Graeme",  p2:"John",    p3:"Brandon", p4:"Darren",  scores:null },
-    { p1:"Keagan",  p2:"Connor",  p3:"Byron",   p4:"Michael", scores:null },
+    { p1:"Connor",  p2:"Keagan",  p3:"Michael", p4:"Byron",  scores:["6-4","3-6","6-2"], result:[2,1], w:1 },
+    { p1:"Darren",  p2:"Brandon", p3:"Graeme",  p4:"John",   scores:["6-1","6-2","6-4"], result:[3,0], w:1 },
   ]},
   { week:3, date:"22 Sep 2026", matches:[
     { p1:"Michael", p2:"Keagan",  p3:"Glenn",   p4:"Nathan",  scores:null },
