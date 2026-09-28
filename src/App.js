@@ -325,7 +325,7 @@ export default function App(){
   const card={background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden"};
 
   const waS4=()=>{
-    let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*⚡ The Thunderdome — Season 4 Standings*\n\n`;
+    let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*⚡ Padelmaxxing — Season 4 Standings*\n\n`;
     s4stats.filter(p=>p.played>0).forEach((p,i)=>t+=`${i+1}. ${p.name} — ${p.pts}pts (${p.wins}W ${p.losses}L)\n`);
     if(lastWeek){
       t+=`\n📅 *Week ${lastWeek.week} Results*\n`;
