@@ -22,8 +22,8 @@ const S4_SCHEDULE = [
     { p1:"Darren",  p2:"Brandon", p3:"Graeme",  p4:"John",   scores:["6-1","6-2","6-4"], result:[3,0], w:1 },
   ]},
   { week:3, date:"22 Sep 2026", matches:[
-    { p1:"Michael", p2:"Keagan",  p3:"Glenn",   p4:"Nathan",  scores:null },
-    { p1:"John",    p2:"Byron",   p3:"Darren",  p4:"Brandon", scores:null },
+    { p1:"Michael", p2:"Keagan",  p3:"Glenn",   p4:"Nathan",  scores:["6-3","6-2","1-6"], result:[2,1], w:1 },
+    { p1:"Darren",  p2:"Brandon", p3:"John",    p4:"Byron",   scores:["6-3","6-3","7-6"], result:[3,0], w:1 },
   ]},
   { week:4, date:"29 Sep 2026", matches:[
     { p1:"Byron",   p2:"Graeme",  p3:"Darren",  p4:"Keagan",  scores:null },
@@ -325,7 +325,7 @@ export default function App(){
   const card={background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden"};
 
   const waS4=()=>{
-    let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*⚡ Padelmaxxing — Season 4 Standings*\n\n`;
+    let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*⚡ The Thunderdome — Season 4 Standings*\n\n`;
     s4stats.filter(p=>p.played>0).forEach((p,i)=>t+=`${i+1}. ${p.name} — ${p.pts}pts (${p.wins}W ${p.losses}L)\n`);
     if(lastWeek){
       t+=`\n📅 *Week ${lastWeek.week} Results*\n`;
@@ -402,7 +402,7 @@ export default function App(){
                   {LOGO_BANNER_URL&&<img src={LOGO_BANNER_URL} alt="DPL" style={{maxWidth:"100%",height:"auto",maxHeight:80,marginBottom:16,display:"block"}}/>}
                   <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#f9731611",border:"1px solid #f9731633",borderRadius:99,padding:"5px 14px",marginBottom:12}}>
                     <span style={{width:7,height:7,borderRadius:"50%",background:C.s4accent,display:"inline-block",boxShadow:`0 0 8px ${C.s4accent}`}}/>
-                    <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.1em"}}>⚡ Padelmaxxing — Season 4 Live</span>
+                    <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.1em"}}>⚡ The Thunderdome — Season 4 Live</span>
                   </div>
                   <h1 style={{fontSize:38,fontWeight:900,lineHeight:1.05,letterSpacing:"-0.04em",marginBottom:10}}>
                     <span style={{background:"linear-gradient(135deg,#f97316,#ffd700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>DEGENERATES</span>
@@ -427,7 +427,7 @@ export default function App(){
             {/* S4 Leaderboard snapshot */}
             <div style={{...card}}>
               <div style={{padding:"12px 18px",borderBottom:`1px solid ${C.border}`,background:`${C.s4accent}0d`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>⚡ Padelmaxxing — Current Standings</span>
+                <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>⚡ The Thunderdome — Current Standings</span>
                 <button onClick={()=>setView("s4")} style={{fontSize:11,color:C.s4accent,background:"transparent",border:"none",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}>Full table →</button>
               </div>
               <div style={{padding:"8px 0"}}>
@@ -558,36 +558,55 @@ export default function App(){
                 {adminMode&&<span style={{fontSize:10,color:C.green}}>Admin mode — enter results below</span>}
               </div>
               {s4schedule.map((week,wi)=>(
-                <div key={wi} style={{borderBottom:`1px solid ${C.border}22`}}>
-                  <div style={{padding:"9px 16px",background:`${C.s4accent}08`,display:"flex",gap:10,alignItems:"center"}}>
-                    <span style={{fontSize:11,fontWeight:800,color:C.s4accent}}>Week {week.week}</span>
-                    <span style={{fontSize:11,color:C.muted}}>· {week.date}</span>
-                    {week.matches.every(m=>m.scores)&&<span style={{fontSize:9,fontWeight:800,color:C.green,background:"#00e67611",borderRadius:99,padding:"2px 8px"}}>COMPLETE</span>}
+                <div key={wi} style={{borderBottom:`1px solid ${C.border}33`}}>
+                  <div style={{padding:"12px 20px",background:`${C.s4accent}08`,display:"flex",gap:10,alignItems:"center",borderBottom:`1px solid ${C.border}22`}}>
+                    <span style={{fontSize:12,fontWeight:800,color:C.s4accent}}>Week {week.week}</span>
+                    <span style={{fontSize:12,color:C.muted}}>· {week.date}</span>
+                    {week.matches.every(m=>m.scores)&&<span style={{fontSize:9,fontWeight:800,color:C.green,background:"#00e67611",borderRadius:99,padding:"2px 8px",marginLeft:4}}>COMPLETE ✓</span>}
                   </div>
                   {week.matches.map((m,mi)=>{
                     const key=`${wi}-${mi}`;
                     const t1Won=m.result&&m.result[0]>m.result[1];
                     return(
-                      <div key={mi} style={{padding:"14px 16px",display:"flex",alignItems:"center",gap:12,borderBottom:mi<week.matches.length-1?`1px solid ${C.border}11`:"none",flexWrap:"wrap",background:m.scores?t1Won?"#00e67604":"#ff525204":"transparent"}}>
-                        <div style={{flex:1,display:"flex",alignItems:"center",gap:8,minWidth:160}}>
-                          <div style={{display:"flex"}}>{[m.p1,m.p2].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-8:0,zIndex:ni}}><Avatar name={n} size={28}/></div>)}</div>
-                          <span style={{fontWeight:800,fontSize:12,color:m.scores&&t1Won?C.text:m.scores?C.muted:C.text}}>{m.p1} & {m.p2}</span>
-                          {m.scores&&t1Won&&<span style={{fontSize:9,color:C.green,fontWeight:800}}>✓</span>}
-                          <span style={{fontSize:11,color:C.muted,padding:"0 6px"}}>vs</span>
-                          <div style={{display:"flex"}}>{[m.p3,m.p4].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-8:0,zIndex:ni}}><Avatar name={n} size={28}/></div>)}</div>
-                          <span style={{fontWeight:800,fontSize:12,color:m.scores&&!t1Won?C.text:m.scores?C.muted:C.text}}>{m.p3} & {m.p4}</span>
-                          {m.scores&&!t1Won&&<span style={{fontSize:9,color:C.green,fontWeight:800}}>✓</span>}
+                      <div key={mi} style={{padding:"20px",borderBottom:mi<week.matches.length-1?`1px solid ${C.border}22`:"none",background:m.scores?t1Won?"#00e67605":"#ff525205":"transparent"}}>
+                        {/* Teams row */}
+                        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:m.scores?12:0,flexWrap:"wrap"}}>
+                          {/* Team 1 */}
+                          <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:160}}>
+                            <div style={{display:"flex"}}>{[m.p1,m.p2].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-10:0,zIndex:ni}}><Avatar name={n} size={36}/></div>)}</div>
+                            <div>
+                              <div style={{fontWeight:900,fontSize:14,color:m.scores&&t1Won?C.text:m.scores?C.muted:C.text}}>{m.p1} & {m.p2}</div>
+                              {m.scores&&t1Won&&<div style={{fontSize:9,fontWeight:800,color:C.green,textTransform:"uppercase",letterSpacing:"0.06em",marginTop:1}}>Winner 🏆</div>}
+                            </div>
+                          </div>
+                          {/* VS */}
+                          <div style={{width:32,height:32,borderRadius:"50%",background:C.surface,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900,color:C.muted,flexShrink:0}}>VS</div>
+                          {/* Team 2 */}
+                          <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:160}}>
+                            <div style={{display:"flex"}}>{[m.p3,m.p4].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-10:0,zIndex:ni}}><Avatar name={n} size={36}/></div>)}</div>
+                            <div>
+                              <div style={{fontWeight:900,fontSize:14,color:m.scores&&!t1Won?C.text:m.scores?C.muted:C.text}}>{m.p3} & {m.p4}</div>
+                              {m.scores&&!t1Won&&<div style={{fontSize:9,fontWeight:800,color:C.green,textTransform:"uppercase",letterSpacing:"0.06em",marginTop:1}}>Winner 🏆</div>}
+                            </div>
+                          </div>
                         </div>
+                        {/* Scores or input */}
                         {m.scores?(
-                          <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
-                            {m.scores.map((sc,si)=><span key={si} style={{fontSize:12,fontWeight:800,background:C.surface,borderRadius:6,padding:"3px 8px"}}>{sc}</span>)}
+                          <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+                            {m.scores.map((sc,si)=>(
+                              <span key={si} style={{fontSize:13,fontWeight:800,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"4px 12px",color:C.text}}>{sc}</span>
+                            ))}
                           </div>
                         ):adminMode?(
-                          <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                            <input placeholder="6-4, 3-6, 6-2" value={inputScores[key]||""} onChange={e=>setInputScores(p=>({...p,[key]:e.target.value}))} style={{width:120}}/>
-                            <button onClick={()=>saveS4Result(wi,mi)} style={{padding:"6px 14px",background:C.s4accent,border:"none",borderRadius:8,color:"#fff",fontWeight:800,fontSize:11,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>Save</button>
+                          <div style={{display:"flex",gap:8,alignItems:"center",marginTop:12}}>
+                            <input placeholder="e.g. 6-4, 3-6, 6-2" value={inputScores[key]||""} onChange={e=>setInputScores(p=>({...p,[key]:e.target.value}))} style={{maxWidth:180}}/>
+                            <button onClick={()=>saveS4Result(wi,mi)} style={{padding:"8px 18px",background:C.s4accent,border:"none",borderRadius:8,color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>Save Result</button>
                           </div>
-                        ):<span style={{fontSize:11,color:C.muted,background:`${C.s4accent}0d`,border:`1px solid ${C.s4accent}22`,borderRadius:8,padding:"4px 10px"}}>Upcoming</span>}
+                        ):(
+                          <div style={{marginTop:8}}>
+                            <span style={{fontSize:11,color:C.s4accent,background:`${C.s4accent}11`,border:`1px solid ${C.s4accent}22`,borderRadius:8,padding:"5px 14px",fontWeight:700}}>Upcoming</span>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -605,28 +624,42 @@ export default function App(){
                 <div>
                   <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>Live Schedule</div>
                   <h2 style={{fontSize:24,fontWeight:900,letterSpacing:"-0.03em"}}>Upcoming Games</h2>
-                  <p style={{fontSize:13,color:C.muted,marginTop:4}}>Season 4 — Padelmaxxing</p>
+                  <p style={{fontSize:13,color:C.muted,marginTop:4}}>Season 4 — The Thunderdome</p>
                 </div>
                 {adminMode&&<button onClick={()=>setShowAddFixture(!showAddFixture)} style={{padding:"8px 18px",background:C.orange,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>+ Add Fixture</button>}
               </div>
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <div style={{display:"flex",flexDirection:"column",gap:16}}>
               {s4schedule.filter(w=>w.matches.some(m=>!m.scores)).map(week=>(
-                <div key={week.week} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
-                  <div style={{padding:"10px 16px",background:`${C.s4accent}0d`,borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                    <span style={{fontWeight:800,fontSize:13,color:C.s4accent}}>Week {week.week}</span>
-                    <span style={{fontSize:12,color:C.muted}}>📅 {week.date} · 🕐 18:30 · 📍 Africa Padel KCC</span>
+                <div key={week.week} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden"}}>
+                  <div style={{padding:"14px 20px",background:`${C.s4accent}0d`,borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+                    <span style={{fontWeight:900,fontSize:15,color:C.s4accent}}>⚡ Week {week.week}</span>
+                    <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+                      <span style={{fontSize:12,color:C.muted}}>📅 {week.date}</span>
+                      <span style={{fontSize:12,color:C.muted}}>🕐 18:30</span>
+                      <span style={{fontSize:12,color:C.muted}}>📍 Africa Padel KCC</span>
+                    </div>
                   </div>
                   {week.matches.filter(m=>!m.scores).map((m,mi)=>(
-                    <div key={mi} style={{display:"flex",alignItems:"center",padding:"14px 16px",gap:12,borderBottom:mi===0?`1px solid ${C.border}22`:"none",flexWrap:"wrap"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:6,flex:1,minWidth:200}}>
-                        <div style={{display:"flex"}}>{[m.p1,m.p2].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-8:0,zIndex:ni}}><Avatar name={n} size={30}/></div>)}</div>
-                        <span style={{fontWeight:800,fontSize:13}}>{m.p1} & {m.p2}</span>
-                        <span style={{color:C.muted,fontSize:12,fontWeight:700,padding:"0 8px"}}>vs</span>
-                        <div style={{display:"flex"}}>{[m.p3,m.p4].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-8:0,zIndex:ni}}><Avatar name={n} size={30}/></div>)}</div>
-                        <span style={{fontWeight:800,fontSize:13}}>{m.p3} & {m.p4}</span>
+                    <div key={mi} style={{padding:"20px",borderBottom:mi===0?`1px solid ${C.border}22`:"none"}}>
+                      <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:160}}>
+                          <div style={{display:"flex"}}>{[m.p1,m.p2].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-10:0,zIndex:ni}}><Avatar name={n} size={38}/></div>)}</div>
+                          <div>
+                            <div style={{fontWeight:900,fontSize:14}}>{m.p1} & {m.p2}</div>
+                            <div style={{fontSize:10,color:C.muted,marginTop:2}}>Court {mi+1}</div>
+                          </div>
+                        </div>
+                        <div style={{width:36,height:36,borderRadius:"50%",background:C.surface,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:C.muted,flexShrink:0}}>VS</div>
+                        <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:160}}>
+                          <div style={{display:"flex"}}>{[m.p3,m.p4].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-10:0,zIndex:ni}}><Avatar name={n} size={38}/></div>)}</div>
+                          <div>
+                            <div style={{fontWeight:900,fontSize:14}}>{m.p3} & {m.p4}</div>
+                            <div style={{fontSize:10,color:C.muted,marginTop:2}}>Court {mi+1}</div>
+                          </div>
+                        </div>
+                        <span style={{fontSize:11,color:C.s4accent,background:`${C.s4accent}11`,border:`1px solid ${C.s4accent}33`,borderRadius:8,padding:"5px 14px",fontWeight:800,flexShrink:0}}>Upcoming</span>
                       </div>
-                      <span style={{fontSize:11,color:C.s4accent,background:`${C.s4accent}11`,border:`1px solid ${C.s4accent}33`,borderRadius:8,padding:"4px 12px",fontWeight:800}}>Upcoming</span>
                     </div>
                   ))}
                 </div>
