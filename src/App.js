@@ -25,17 +25,17 @@ const S4_SCHEDULE = [
     { p1:"Michael", p2:"Keagan",  p3:"Glenn",   p4:"Nathan",  scores:["6-3","6-2","1-6"], result:[2,1], w:1 },
     { p1:"Darren",  p2:"Brandon", p3:"John",    p4:"Byron",   scores:["6-3","6-3","7-6"], result:[3,0], w:1 },
   ]},
-  { week:4, date:"29 Sep 2026", matches:[
-    { p1:"Byron",   p2:"Graeme",  p3:"Darren",  p4:"Keagan",  scores:null },
-    { p1:"Brandon", p2:"John",    p3:"Michael",  p4:"Connor",  scores:null },
+{ week:4, date:"29 Sep 2026", matches:[
+    { p1:"Byron",   p2:"Graeme",  p3:"Darren",  p4:"Keagan",  scores:["7-5","6-7","6-4"], result:[2,1], w:1 },
+    { p1:"Michael", p2:"Connor",  p3:"Brandon", p4:"John",    scores:["6-4","7-6","6-4"], result:[3,0], w:1 },
   ]},
   { week:5, date:"06 Oct 2026", matches:[
-    { p1:"Darren",  p2:"Byron",   p3:"John",    p4:"Keagan",  scores:null },
-    { p1:"Michael", p2:"Graeme",  p3:"Brandon", p4:"Connor",  scores:null },
+    { p1:"Darren",  p2:"Byron",   p3:"John",    p4:"Keagan",  scores:["7-5","6-3","2-6"], result:[2,1], w:1 },
+    { p1:"Brandon", p2:"Connor",  p3:"Michael", p4:"Graeme",  scores:["6-4","7-6","2-6"], result:[2,1], w:1 },
   ]},
   { week:6, date:"13 Oct 2026", matches:[
-    { p1:"John",    p2:"Byron",   p3:"Connor",  p4:"Graeme",  scores:null },
-    { p1:"Brandon", p2:"Keagan",  p3:"Michael", p4:"Darren",  scores:null },
+    { p1:"John",    p2:"Byron",   p3:"Connor",  p4:"Graeme",  scores:["3-6","6-1","6-2"], result:[2,1], w:1 },
+    { p1:"Michael", p2:"Nathan",  p3:"Brandon", p4:"Keagan",  scores:["6-4","7-5","6-2"], result:[3,0], w:1 },
   ]},
   { week:7, date:"20 Oct 2026", matches:[
     { p1:"Graeme",  p2:"Keagan",  p3:"Darren",  p4:"John",    scores:null },
@@ -402,7 +402,7 @@ export default function App(){
                   {LOGO_BANNER_URL&&<img src={LOGO_BANNER_URL} alt="DPL" style={{maxWidth:"100%",height:"auto",maxHeight:80,marginBottom:16,display:"block"}}/>}
                   <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#f9731611",border:"1px solid #f9731633",borderRadius:99,padding:"5px 14px",marginBottom:12}}>
                     <span style={{width:7,height:7,borderRadius:"50%",background:C.s4accent,display:"inline-block",boxShadow:`0 0 8px ${C.s4accent}`}}/>
-                    <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.1em"}}>⚡ The Thunderdome — Season 4 Live</span>
+                    <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.1em"}}>⚡ The Padelmaxxing — Season 4 Live</span>
                   </div>
                   <h1 style={{fontSize:38,fontWeight:900,lineHeight:1.05,letterSpacing:"-0.04em",marginBottom:10}}>
                     <span style={{background:"linear-gradient(135deg,#f97316,#ffd700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>DEGENERATES</span>
@@ -427,7 +427,7 @@ export default function App(){
             {/* S4 Leaderboard snapshot */}
             <div style={{...card}}>
               <div style={{padding:"12px 18px",borderBottom:`1px solid ${C.border}`,background:`${C.s4accent}0d`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>⚡ The Thunderdome — Current Standings</span>
+                <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>⚡ The Padelmaxxing — Current Standings</span>
                 <button onClick={()=>setView("s4")} style={{fontSize:11,color:C.s4accent,background:"transparent",border:"none",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}>Full table →</button>
               </div>
               <div style={{padding:"8px 0"}}>
@@ -624,7 +624,7 @@ export default function App(){
                 <div>
                   <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>Live Schedule</div>
                   <h2 style={{fontSize:24,fontWeight:900,letterSpacing:"-0.03em"}}>Upcoming Games</h2>
-                  <p style={{fontSize:13,color:C.muted,marginTop:4}}>Season 4 — The Thunderdome</p>
+                  <p style={{fontSize:13,color:C.muted,marginTop:4}}>Season 4 — The Padelmaxxing</p>
                 </div>
                 {adminMode&&<button onClick={()=>setShowAddFixture(!showAddFixture)} style={{padding:"8px 18px",background:C.orange,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>+ Add Fixture</button>}
               </div>
