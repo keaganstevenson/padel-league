@@ -1,4 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, set, onValue, push } from "firebase/database";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyPlaceholderKeyReplaceWithYours",
+  authDomain: "dpl-padel-site.firebaseapp.com",
+  databaseURL: "https://dpl-padel-site-default-rtdb.firebaseio.com",
+  projectId: "dpl-padel-site",
+  storageBucket: "dpl-padel-site.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:placeholder"
+};
+
+let db = null;
+try { const app = initializeApp(firebaseConfig); db = getDatabase(app); } catch(e) { console.warn("Firebase init failed:", e); }
 
 const LOGO_SQUARE_URL = "https://i.imgur.com/p6qJIP1.jpeg";
 const LOGO_BANNER_URL = "https://i.imgur.com/dUkcrm5.jpeg";
@@ -148,9 +163,9 @@ const SEASON3_IND = [
   { week:8, date:"02 Sep 2026", p1:"Michael",p2:"John",   p3:"Darren", p4:"Connor",  s:[7,6,6,7,6,4], w:1 },
 ];
 
-const ALL_HIST_PLAYERS = ["Brandon","Brett","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
-const PALETTE = ["#00d4ff","#f472b6","#ffd700","#ff5252","#fb923c","#34d399","#a78bfa","#60a5fa","#00e676","#facc15","#e879f9","#38bdf8"];
-function pColor(n){const order=[...ALL_HIST_PLAYERS,"Glenn"];const i=order.indexOf(n);return PALETTE[i>=0?i:11];}
+const ALL_HIST_PLAYERS = ["Brandon","Brett","Byron","Chris","Connor","Darren","Glenn","Graeme","John","Keagan","Michael","Nathan","Shaun"];
+const PALETTE = ["#00d4ff","#f472b6","#ffd700","#e879f9","#ff5252","#fb923c","#34d399","#a78bfa","#60a5fa","#00e676","#facc15","#38bdf8","#f87171"];
+function pColor(n){const i=ALL_HIST_PLAYERS.indexOf(n);return PALETTE[i>=0?i:PALETTE.length-1];}
 function initials(n){return n.slice(0,2).toUpperCase();}
 
 const PLAYER_PHOTOS={};
@@ -253,6 +268,8 @@ function calcS4Stats(){
 function calcHistStats(matches){
   const stats={};
   ALL_HIST_PLAYERS.forEach(p=>stats[p]={name:p,w:0,l:0,played:0});
+  // Also include any players that appear in matches but aren't in ALL_HIST_PLAYERS
+  matches.forEach(m=>[m.p1,m.p2,m.p3,m.p4].forEach(p=>{if(p&&!stats[p])stats[p]={name:p,w:0,l:0,played:0};}));
   matches.forEach(m=>{
     const w1=m.w===1;
     [m.p1,m.p2].forEach(p=>{if(stats[p]){stats[p].played++;if(w1)stats[p].w++;else stats[p].l++;}});
@@ -292,7 +309,56 @@ export default function App(){
   const [newFixture,setNewFixture]=useState({date:"",time:"",venue:"",teams:""});
   const [showAddFixture,setShowAddFixture]=useState(false);
 
+  // Score entry state (Firebase-backed)
+  const [scoreEntry,setScoreEntry]=useState({week:"",p1:"",p2:"",p3:"",p4:"",s1:"",s2:"",s3:""});
+  const [fbResults,setFbResults]=useState([]);
+
+  // Season 5 setup state
+  const [s5Format,setS5Format]=useState({name:"Season 5",type:"teams",weeks:8,courts:2,venue:"Africa Padel KCC",time:"18:30",accent:"#8b5cf6"});
+  const [s5Teams,setS5Teams]=useState([
+    {id:1,name:"",p1:"",p2:"",color:"#00d4ff"},
+    {id:2,name:"",p1:"",p2:"",color:"#f472b6"},
+    {id:3,name:"",p1:"",p2:"",color:"#ffd700"},
+    {id:4,name:"",p1:"",p2:"",color:"#ff5252"},
+  ]);
+  const [s5Saved,setS5Saved]=useState(false);
+
   const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
+
+  // Firebase: listen for submitted scores
+  useEffect(()=>{
+    if(!db)return;
+    const r=ref(db,"s4results");
+    const unsub=onValue(r,snap=>{
+      const data=snap.val();
+      if(data){setFbResults(Object.values(data));}
+    });
+    return()=>unsub();
+  },[]);
+
+  // Submit score via Firebase dropdown form
+  const submitScoreEntry=()=>{
+    const{week,p1,p2,p3,p4,s1,s2,s3}=scoreEntry;
+    if(!week||!p1||!p2||!p3||!p4||!s1||!s2){showToast("Fill in all fields");return;}
+    if(p1===p2||p1===p3||p1===p4||p2===p3||p2===p4||p3===p4){showToast("Players must all be different");return;}
+    const scores=[s1,s2,s3].filter(Boolean);
+    let ws=0,ls=0;
+    const valid=scores.every(sc=>{const[a,b]=sc.split("-").map(Number);if(isNaN(a)||isNaN(b))return false;if(a>b)ws++;else ls++;return true;});
+    if(!valid){showToast("Score format: 6-4");return;}
+    const entry={week:Number(week),p1,p2,p3,p4,scores,result:[ws,ls],w:1,submittedAt:Date.now()};
+    if(db){
+      push(ref(db,"s4results"),entry).then(()=>{showToast("Score saved to Firebase ✓");setScoreEntry({week:"",p1:"",p2:"",p3:"",p4:"",s1:"",s2:"",s3:""});}).catch(e=>showToast("Firebase error: "+e.message));
+    } else {
+      showToast("Firebase not connected — check config");
+    }
+  };
+
+  // Save S5 setup to Firebase
+  const saveS5Setup=()=>{
+    if(!db){showToast("Firebase not connected");return;}
+    const setup={...s5Format,teams:s5Teams,savedAt:Date.now()};
+    set(ref(db,"season5setup"),setup).then(()=>{setS5Saved(true);showToast("Season 5 setup saved ✓");}).catch(e=>showToast("Error: "+e.message));
+  };
   const handlePin=k=>{
     if(k==="⌫"){setPin(p=>p.slice(0,-1));return;}
     if(pin.length>=4)return;
@@ -342,6 +408,8 @@ export default function App(){
     {id:"s2",      label:"Season 2",   icon:"📅"},
     {id:"s1",      label:"Season 1",   icon:"📜"},
     {id:"players", label:"Players",    icon:"👥"},
+    {id:"scores",  label:"Scores",     icon:"📝"},
+    {id:"s5setup", label:"S5 Setup",   icon:"🔧"},
   ];
 
   // Medal colours
@@ -866,6 +934,233 @@ export default function App(){
             </div>
           );
         })(        )}
+
+        {/* ════════════════════════════ SCORE ENTRY ═══════════════════════════ */}
+        {view==="scores"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:20}}>
+            <div style={{borderRadius:20,border:`1px solid #f9731633`,padding:24,background:C.card}}>
+              <div style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>Admin Tool</div>
+              <h2 style={{fontSize:24,fontWeight:900,marginBottom:4}}>Score Entry</h2>
+              <p style={{fontSize:13,color:C.muted}}>Enter match results using dropdowns — saves directly to Firebase</p>
+              {!adminMode&&<div style={{marginTop:12,padding:"10px 16px",background:"#ff525211",border:"1px solid #ff525233",borderRadius:10,fontSize:12,color:"#ff8888"}}>🔒 Enable admin mode to submit scores</div>}
+            </div>
+
+            {adminMode&&(
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:20}}>
+                <div style={{fontSize:12,fontWeight:800,color:C.s4accent,marginBottom:16,textTransform:"uppercase",letterSpacing:"0.08em"}}>📝 Submit New Result — Season 4</div>
+
+                {/* Week selector */}
+                <div style={{marginBottom:14}}>
+                  <label style={{fontSize:11,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",display:"block",marginBottom:6}}>Week</label>
+                  <select value={scoreEntry.week} onChange={e=>setScoreEntry(p=>({...p,week:e.target.value}))} style={{background:"#1a1a2e",color:C.text,border:`1px solid ${C.border}`,borderRadius:8,padding:"9px 12px",fontSize:13,width:"100%",fontFamily:"inherit",outline:"none"}}>
+                    <option value="">— Select Week —</option>
+                    {S4_SCHEDULE.map(w=><option key={w.week} value={w.week}>Week {w.week} · {w.date}</option>)}
+                  </select>
+                </div>
+
+                {/* Team 1 */}
+                <div style={{marginBottom:14}}>
+                  <label style={{fontSize:11,fontWeight:800,color:C.green,textTransform:"uppercase",letterSpacing:"0.06em",display:"block",marginBottom:6}}>🏆 Winning Team</label>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                    {["p1","p2"].map((pk,pi)=>(
+                      <div key={pk}>
+                        <label style={{fontSize:10,color:C.muted,display:"block",marginBottom:4}}>Player {pi+1}</label>
+                        <select value={scoreEntry[pk]} onChange={e=>setScoreEntry(p=>({...p,[pk]:e.target.value}))} style={{background:"#1a1a2e",color:C.text,border:`1px solid #00e67633`,borderRadius:8,padding:"9px 12px",fontSize:13,width:"100%",fontFamily:"inherit",outline:"none"}}>
+                          <option value="">— Select —</option>
+                          {S4_PLAYERS.map(p=><option key={p} value={p}>{p}</option>)}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Team 2 */}
+                <div style={{marginBottom:14}}>
+                  <label style={{fontSize:11,fontWeight:800,color:C.red,textTransform:"uppercase",letterSpacing:"0.06em",display:"block",marginBottom:6}}>❌ Losing Team</label>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                    {["p3","p4"].map((pk,pi)=>(
+                      <div key={pk}>
+                        <label style={{fontSize:10,color:C.muted,display:"block",marginBottom:4}}>Player {pi+1}</label>
+                        <select value={scoreEntry[pk]} onChange={e=>setScoreEntry(p=>({...p,[pk]:e.target.value}))} style={{background:"#1a1a2e",color:C.text,border:`1px solid #ff525233`,borderRadius:8,padding:"9px 12px",fontSize:13,width:"100%",fontFamily:"inherit",outline:"none"}}>
+                          <option value="">— Select —</option>
+                          {S4_PLAYERS.map(p=><option key={p} value={p}>{p}</option>)}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Set scores */}
+                <div style={{marginBottom:20}}>
+                  <label style={{fontSize:11,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.06em",display:"block",marginBottom:6}}>Set Scores (winner first e.g. 6-4)</label>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                    {["s1","s2","s3"].map((sk,si)=>(
+                      <div key={sk}>
+                        <label style={{fontSize:10,color:C.muted,display:"block",marginBottom:4}}>Set {si+1}{si===2?" (if needed)":""}</label>
+                        <input
+                          placeholder={si===2?"optional":"e.g. 6-4"}
+                          value={scoreEntry[sk]}
+                          onChange={e=>setScoreEntry(p=>({...p,[sk]:e.target.value}))}
+                          style={{background:"#1a1a2e",color:C.text,border:`1px solid ${C.border}`,borderRadius:8,padding:"9px 12px",fontSize:13,width:"100%",fontFamily:"inherit",outline:"none"}}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Preview */}
+                {scoreEntry.p1&&scoreEntry.p2&&scoreEntry.p3&&scoreEntry.p4&&scoreEntry.s1&&scoreEntry.s2&&(
+                  <div style={{background:"#00e67608",border:"1px solid #00e67622",borderRadius:10,padding:12,marginBottom:16,fontSize:12}}>
+                    <span style={{fontWeight:800,color:C.green}}>Preview: </span>
+                    <span style={{color:C.text}}>{scoreEntry.p1} & {scoreEntry.p2}</span>
+                    <span style={{color:C.muted}}> def. </span>
+                    <span style={{color:C.text}}>{scoreEntry.p3} & {scoreEntry.p4}</span>
+                    <span style={{color:C.muted}}> ({[scoreEntry.s1,scoreEntry.s2,scoreEntry.s3].filter(Boolean).join(", ")})</span>
+                    {scoreEntry.week&&<span style={{color:C.muted}}> — Week {scoreEntry.week}</span>}
+                  </div>
+                )}
+
+                <button onClick={submitScoreEntry} style={{width:"100%",padding:"14px",background:C.s4accent,border:"none",borderRadius:12,color:"#fff",fontWeight:900,fontSize:14,cursor:"pointer",fontFamily:"inherit",letterSpacing:"0.02em"}}>
+                  Submit Result to Firebase ⚡
+                </button>
+              </div>
+            )}
+
+            {/* Firebase results log */}
+            {fbResults.length>0&&(
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden"}}>
+                <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,background:"#00e67608"}}>
+                  <span style={{fontSize:11,fontWeight:800,color:C.green,textTransform:"uppercase",letterSpacing:"0.08em"}}>✅ Firebase Results Log ({fbResults.length})</span>
+                </div>
+                {[...fbResults].sort((a,b)=>b.submittedAt-a.submittedAt).map((r,i)=>(
+                  <div key={i} style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}22`,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
+                    <div>
+                      <span style={{fontWeight:800,fontSize:13}}>{r.p1} & {r.p2}</span>
+                      <span style={{color:C.muted,fontSize:12}}> def. {r.p3} & {r.p4}</span>
+                      <div style={{fontSize:11,color:C.muted,marginTop:2}}>Week {r.week} · {r.scores?.join(", ")}</div>
+                    </div>
+                    <span style={{fontSize:10,background:"#00e67611",color:C.green,borderRadius:8,padding:"3px 10px",fontWeight:800}}>Saved ✓</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ════════════════════════════ S5 SETUP ══════════════════════════════ */}
+        {view==="s5setup"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:20}}>
+            <div style={{borderRadius:20,border:`1px solid #8b5cf633`,padding:24,background:C.card}}>
+              <div style={{fontSize:11,fontWeight:800,color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>Season Builder</div>
+              <h2 style={{fontSize:24,fontWeight:900,marginBottom:4}}>Season 5 Setup</h2>
+              <p style={{fontSize:13,color:C.muted}}>Configure the next season — teams, format, schedule. Saves to Firebase.</p>
+            </div>
+
+            {/* Season settings */}
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:20}}>
+              <div style={{fontSize:12,fontWeight:800,color:"#a78bfa",marginBottom:16,textTransform:"uppercase",letterSpacing:"0.08em"}}>⚙️ Season Settings</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+                {[
+                  {label:"Season Name",key:"name",placeholder:"e.g. Season 5"},
+                  {label:"Venue",key:"venue",placeholder:"e.g. Africa Padel KCC"},
+                  {label:"Kickoff Time",key:"time",placeholder:"e.g. 18:30"},
+                  {label:"Accent Colour",key:"accent",placeholder:"#8b5cf6"},
+                ].map(f=>(
+                  <div key={f.key}>
+                    <label style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:5}}>{f.label}</label>
+                    <input value={s5Format[f.key]} onChange={e=>setS5Format(p=>({...p,[f.key]:e.target.value}))} placeholder={f.placeholder}
+                      style={{background:"#1a1a2e",color:C.text,border:`1px solid ${C.border}`,borderRadius:8,padding:"9px 12px",fontSize:13,width:"100%",fontFamily:"inherit",outline:"none"}}/>
+                  </div>
+                ))}
+                <div>
+                  <label style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:5}}>Format</label>
+                  <select value={s5Format.type} onChange={e=>setS5Format(p=>({...p,type:e.target.value}))} style={{background:"#1a1a2e",color:C.text,border:`1px solid ${C.border}`,borderRadius:8,padding:"9px 12px",fontSize:13,width:"100%",fontFamily:"inherit",outline:"none"}}>
+                    <option value="teams">Teams (fixed pairs)</option>
+                    <option value="individual">Individual (random pairs)</option>
+                    <option value="groups">Groups + Knockout</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:5}}>Number of Weeks</label>
+                  <select value={s5Format.weeks} onChange={e=>setS5Format(p=>({...p,weeks:Number(e.target.value)}))} style={{background:"#1a1a2e",color:C.text,border:`1px solid ${C.border}`,borderRadius:8,padding:"9px 12px",fontSize:13,width:"100%",fontFamily:"inherit",outline:"none"}}>
+                    {[4,5,6,7,8,9,10,12].map(n=><option key={n} value={n}>{n} weeks</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",display:"block",marginBottom:5}}>Courts per Week</label>
+                  <select value={s5Format.courts} onChange={e=>setS5Format(p=>({...p,courts:Number(e.target.value)}))} style={{background:"#1a1a2e",color:C.text,border:`1px solid ${C.border}`,borderRadius:8,padding:"9px 12px",fontSize:13,width:"100%",fontFamily:"inherit",outline:"none"}}>
+                    {[1,2,3,4].map(n=><option key={n} value={n}>{n} court{n>1?"s":""}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Team builder */}
+            {s5Format.type==="teams"&&(
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:20}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                  <div style={{fontSize:12,fontWeight:800,color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em"}}>👥 Team Pairings</div>
+                  <button onClick={()=>setS5Teams(p=>[...p,{id:Date.now(),name:"",p1:"",p2:"",color:"#" + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,"0")}])}
+                    style={{padding:"6px 14px",background:"#8b5cf622",border:"1px solid #8b5cf633",borderRadius:8,color:"#a78bfa",fontWeight:800,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>
+                    + Add Team
+                  </button>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                  {s5Teams.map((team,ti)=>(
+                    <div key={team.id} style={{background:C.surface,border:`1px solid ${team.color}33`,borderRadius:12,padding:14}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8}}>
+                          <input type="color" value={team.color} onChange={e=>setS5Teams(p=>p.map((t,i)=>i===ti?{...t,color:e.target.value}:t))} style={{width:28,height:28,border:"none",background:"none",cursor:"pointer",padding:0}}/>
+                          <input value={team.name} onChange={e=>setS5Teams(p=>p.map((t,i)=>i===ti?{...t,name:e.target.value}:t))} placeholder={`Team ${ti+1} name`}
+                            style={{background:"transparent",color:team.color,border:"none",borderBottom:`1px solid ${team.color}44`,borderRadius:0,padding:"4px 0",fontSize:14,fontWeight:900,width:160,fontFamily:"inherit",outline:"none"}}/>
+                        </div>
+                        {s5Teams.length>2&&<button onClick={()=>setS5Teams(p=>p.filter((_,i)=>i!==ti))} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:16}}>✕</button>}
+                      </div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                        {["p1","p2"].map((pk,pi)=>(
+                          <div key={pk}>
+                            <label style={{fontSize:10,color:C.muted,display:"block",marginBottom:4}}>Player {pi+1}</label>
+                            <select value={team[pk]} onChange={e=>setS5Teams(p=>p.map((t,i)=>i===ti?{...t,[pk]:e.target.value}:t))}
+                              style={{background:"#1a1a2e",color:C.text,border:`1px solid ${team.color}33`,borderRadius:8,padding:"8px 12px",fontSize:13,width:"100%",fontFamily:"inherit",outline:"none"}}>
+                              <option value="">— Select Player —</option>
+                              {ALL_HIST_PLAYERS.filter(p=>p!=="Brett"&&p!=="Shaun").map(p=><option key={p} value={p}>{p}</option>)}
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Preview */}
+            <div style={{background:C.card,border:`1px solid #8b5cf633`,borderRadius:16,padding:20}}>
+              <div style={{fontSize:12,fontWeight:800,color:"#a78bfa",marginBottom:12,textTransform:"uppercase",letterSpacing:"0.08em"}}>👁 Preview</div>
+              <div style={{background:C.surface,borderRadius:12,padding:16}}>
+                <div style={{fontSize:18,fontWeight:900,color:"#a78bfa",marginBottom:4}}>{s5Format.name||"Season 5"}</div>
+                <div style={{fontSize:12,color:C.muted,marginBottom:8}}>{s5Format.type==="teams"?"Teams Format":s5Format.type==="individual"?"Individual Format":"Groups + Knockout"} · {s5Format.weeks} weeks · {s5Format.courts} court{s5Format.courts>1?"s":""}/week</div>
+                <div style={{fontSize:12,color:C.muted}}>📍 {s5Format.venue||"TBD"} · 🕐 {s5Format.time||"TBD"}</div>
+                {s5Format.type==="teams"&&s5Teams.filter(t=>t.name&&t.p1&&t.p2).length>0&&(
+                  <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:6}}>
+                    {s5Teams.filter(t=>t.name||t.p1).map((t,i)=>(
+                      <div key={t.id} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 10px",background:`${t.color}0d`,borderRadius:8,border:`1px solid ${t.color}22`}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:t.color,flexShrink:0}}/>
+                        <span style={{fontWeight:800,fontSize:12,color:t.color}}>{t.name||`Team ${i+1}`}</span>
+                        {t.p1&&t.p2&&<span style={{fontSize:11,color:C.muted}}>· {t.p1} & {t.p2}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Save */}
+            <button onClick={saveS5Setup} style={{padding:"16px",background:"linear-gradient(135deg,#8b5cf6,#a78bfa)",border:"none",borderRadius:14,color:"#fff",fontWeight:900,fontSize:15,cursor:"pointer",fontFamily:"inherit",letterSpacing:"0.02em"}}>
+              {s5Saved?"✓ Saved to Firebase":"💾 Save Season 5 Setup to Firebase"}
+            </button>
+          </div>
+        )}
 
       </main>
     </div>
