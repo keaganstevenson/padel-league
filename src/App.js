@@ -3,13 +3,13 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, onValue, push } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyPlaceholderKeyReplaceWithYours",
+  apiKey: "AIzaSyA4sJvUkofJt1u61MEC-4JSkUKSN9pBEI8",
   authDomain: "dpl-padel-site.firebaseapp.com",
   databaseURL: "https://dpl-padel-site-default-rtdb.firebaseio.com",
   projectId: "dpl-padel-site",
   storageBucket: "dpl-padel-site.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:placeholder"
+  messagingSenderId: "884760946899",
+  appId: "1:884760946899:web:73035c5289adba435ecc26"
 };
 
 let db = null;
