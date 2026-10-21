@@ -1,52 +1,65 @@
-import { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, onValue, set } from 'firebase/database';
 
-const LOGO_SQUARE_URL = "https://i.imgur.com/p6qJIP1.jpeg";
-const LOGO_BANNER_URL = "https://i.imgur.com/dUkcrm5.jpeg";
-
-const C = {
-  bg:"#0a0a0f", card:"#12121a", border:"#1e1e2e", accent:"#00d4ff",
-  gold:"#ffd700", silver:"#c0c0c0", bronze:"#cd7f32",
-  green:"#00e676", red:"#ff5252", muted:"#6b7280", text:"#e2e8f0",
-  surface:"#16162a", purple:"#7c3aed", orange:"#f97316",
-  s4accent:"#f97316", // Season 4 accent — burnt orange
+const firebaseConfig = {
+  apiKey: "AIzaSyA4sJvUkofJt1u61MEC-4JSkUKSN9pBEI8",
+  authDomain: "dpl-padel-site.firebaseapp.com",
+  databaseURL: "https://dpl-padel-site-default-rtdb.firebaseio.com",
+  projectId: "dpl-padel-site",
+  storageBucket: "dpl-padel-site.firebasestorage.app",
+  messagingSenderId: "884760946899",
+  appId: "1:884760946899:web:73035c5289adba435ecc26",
+  measurementId: "G-P77FWBV1F8"
 };
 
-// ── SEASON 4 SCHEDULE ──────────────────────────────────────────────────────
-const S4_SCHEDULE = [
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getDatabase(firebaseApp);
+
+const ADMIN_PIN = "1234";
+const LOGO_SQUARE_URL = "https://i.imgur.com/p6qJIP1.jpeg";
+const LOGO_BANNER_URL = "https://i.imgur.com/dUkcrm5.jpeg";
+const TODAY = new Date("2026-10-20");
+
+const PLAYER_COLORS = {
+  Brandon:"#00d4ff", Byron:"#ffd700", Connor:"#ff5252", Darren:"#00e676",
+  Graeme:"#ff9800", John:"#e040fb", Keagan:"#00bcd4", Michael:"#f44336",
+  Glenn:"#8bc34a", Nathan:"#a78bfa"
+};
+
+const S4_PLAYERS = ["Brandon","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Glenn","Nathan"];
+
+const S4_SCHEDULE_BASE = [
   { week:1, date:"08 Sep 2026", matches:[
-    { p1:"Brandon", p2:"Byron",   p3:"Graeme",  p4:"Darren",  scores:["6-4","6-1","6-3"], result:[3,0], w:1 },
-    { p1:"Keagan",  p2:"Michael", p3:"Connor",  p4:"John",    scores:["6-3","7-6","6-3"], result:[3,0], w:1 },
+    { p1:"Brandon", p2:"Byron",   p3:"Graeme",  p4:"Darren",  scores:["6-4","6-1","6-3"], result:[3,0] },
+    { p1:"Keagan",  p2:"Michael", p3:"Connor",  p4:"John",    scores:["6-3","7-6","6-3"], result:[3,0] },
   ]},
   { week:2, date:"15 Sep 2026", matches:[
-    { p1:"Connor",  p2:"Keagan",  p3:"Michael", p4:"Byron",  scores:["6-4","3-6","6-2"], result:[2,1], w:1 },
-    { p1:"Darren",  p2:"Brandon", p3:"Graeme",  p4:"John",   scores:["6-1","6-2","6-4"], result:[3,0], w:1 },
+    { p1:"Connor",  p2:"Keagan",  p3:"Michael", p4:"Byron",   scores:["6-4","3-6","6-2"], result:[2,1] },
+    { p1:"Darren",  p2:"Brandon", p3:"Graeme",  p4:"John",    scores:["6-1","6-2","6-4"], result:[3,0] },
   ]},
   { week:3, date:"22 Sep 2026", matches:[
-    { p1:"Michael", p2:"Keagan",  p3:"Glenn",   p4:"Nathan",  scores:["6-3","6-2","1-6"], result:[2,1], w:1 },
-    { p1:"Darren",  p2:"Brandon", p3:"John",    p4:"Byron",   scores:["6-3","6-3","7-6"], result:[3,0], w:1 },
+    { p1:"Michael", p2:"Keagan",  p3:"Glenn",   p4:"Nathan",  scores:["6-3","6-2","1-6"], result:[2,1] },
+    { p1:"Darren",  p2:"Brandon", p3:"John",    p4:"Byron",   scores:["6-3","6-3","7-6"], result:[3,0] },
   ]},
-{ week:4, date:"29 Sep 2026", matches:[
-    { p1:"Byron",   p2:"Graeme",  p3:"Darren",  p4:"Keagan",  scores:["7-5","6-7","6-4"], result:[2,1], w:1 },
-    { p1:"Michael", p2:"Connor",  p3:"Brandon", p4:"John",    scores:["6-4","7-6","6-4"], result:[3,0], w:1 },
+  { week:4, date:"29 Sep 2026", matches:[
+    { p1:"Byron",   p2:"Graeme",  p3:"Darren",  p4:"Keagan",  scores:["7-5","6-7","6-4"], result:[2,1] },
+    { p1:"Michael", p2:"Connor",  p3:"Brandon", p4:"John",    scores:["6-4","7-6","6-4"], result:[3,0] },
   ]},
   { week:5, date:"06 Oct 2026", matches:[
-    { p1:"Darren",  p2:"Byron",   p3:"John",    p4:"Keagan",  scores:["7-5","6-3","2-6"], result:[2,1], w:1 },
-    { p1:"Brandon", p2:"Connor",  p3:"Michael", p4:"Graeme",  scores:["6-4","7-6","2-6"], result:[2,1], w:1 },
+    { p1:"Darren",  p2:"Byron",   p3:"John",    p4:"Keagan",  scores:["7-5","6-3","2-6"], result:[2,1] },
+    { p1:"Brandon", p2:"Connor",  p3:"Michael", p4:"Graeme",  scores:["6-4","7-6","2-6"], result:[2,1] },
   ]},
   { week:6, date:"13 Oct 2026", matches:[
-    { p1:"John",    p2:"Byron",   p3:"Connor",  p4:"Graeme",  scores:["3-6","6-1","6-2"], result:[2,1], w:1 },
-    { p1:"Michael", p2:"Nathan",  p3:"Brandon", p4:"Keagan",  scores:["6-4","7-5","6-2"], result:[3,0], w:1 },
+    { p1:"John",    p2:"Byron",   p3:"Connor",  p4:"Graeme",  scores:["3-6","6-1","6-2"], result:[2,1] },
+    { p1:"Michael", p2:"Nathan",  p3:"Brandon", p4:"Keagan",  scores:["6-4","7-5","6-2"], result:[3,0] },
   ]},
   { week:7, date:"20 Oct 2026", matches:[
-    { p1:"Graeme",  p2:"Keagan",  p3:"Darren",  p4:"John",    scores:null },
-    { p1:"Byron",   p2:"Connor",  p3:"Brandon", p4:"Michael", scores:null },
+    { p1:"Graeme",  p2:"Keagan",  p3:"Darren",  p4:"John",    scores:null, result:null },
+    { p1:"Byron",   p2:"Connor",  p3:"Brandon", p4:"Michael", scores:null, result:null },
   ]},
 ];
 
-// ── S4 PLAYERS ─────────────────────────────────────────────────────────────
-const S4_PLAYERS = ["Brandon","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Glenn","Nathan"];
-
-// ── SEASON 3 DATA ──────────────────────────────────────────────────────────
 const TEAMS = [
   { id:"t1", name:"Overhead Casualties", color:"#00d4ff", p1:"Brandon", p2:"Graeme",  emoji:"💥" },
   { id:"t2", name:"Circumserve",         color:"#ffd700", p1:"Byron",   p2:"Keagan",  emoji:"🌀" },
@@ -56,817 +69,763 @@ const TEAMS = [
 ];
 
 const S3_SCHEDULE = [
-  { round:1,   date:"14 Jul 2026", matches:[
-    { t1:"t1", t2:"t2", scores:["6-4","5-7","4-6"], result:[2,1] },
-    { t1:"t4", t2:"t3", scores:["3-6","6-2","6-3"], result:[2,1] },
+  { round:1, matches:[{t1:"t1",t2:"t2",score1:null,score2:null},{t1:"t3",t2:"t4",score1:null,score2:null}]},
+  { round:2, matches:[{t1:"t1",t2:"t3",score1:null,score2:null},{t1:"t2",t2:"t5",score1:null,score2:null}]},
+  { round:3, matches:[{t1:"t2",t2:"t3",score1:null,score2:null},{t1:"t4",t2:"t5",score1:null,score2:null}]},
+  { round:4, matches:[{t1:"t1",t2:"t4",score1:null,score2:null},{t1:"t3",t2:"t5",score1:null,score2:null}]},
+  { round:5, matches:[{t1:"t1",t2:"t5",score1:null,score2:null},{t1:"t2",t2:"t4",score1:null,score2:null}]},
+  { round:6, matches:[
+    {t1:"t1",t2:"t2",score1:3,score2:1,sets:[{s1:6,s2:4},{s1:3,s2:6},{s1:6,s2:3},{s1:7,s2:6}]},
+    {t1:"t3",t2:"t4",score1:3,score2:0,sets:[{s1:6,s2:2},{s1:6,s2:4},{s1:6,s2:3}]},
   ]},
-  { round:2,   date:"21 Jul 2026", matches:[
-    { t1:"t3", t2:"t1", scores:["6-3","7-5","6-4"], result:[2,0] },
-    { t1:"t4", t2:"t2", scores:["6-4","7-5","7-5"], result:[2,0] },
+  { round:7, matches:[
+    {t1:"t2",t2:"t3",score1:3,score2:1,sets:[{s1:4,s2:6},{s1:6,s2:3},{s1:6,s2:2},{s1:6,s2:4}]},
+    {t1:"t1",t2:"t4",score1:3,score2:0,sets:[{s1:6,s2:1},{s1:6,s2:3},{s1:6,s2:4}]},
   ]},
-  { round:3,   date:"30 Jul 2026", matches:[
-    { t1:"t4", t2:"t1", scores:["6-3","6-3","6-3"], result:[2,0] },
-    { t1:"t2", t2:"t5", scores:["7-6","1-6","7-5"], result:[2,1], forfeit:true },
+  { round:8, matches:[
+    {t1:"t1",t2:"t3",score1:2,score2:3,sets:[{s1:3,s2:6},{s1:7,s2:6},{s1:4,s2:6},{s1:6,s2:3},{s1:3,s2:6}]},
+    {t1:"t2",t2:"t5",score1:3,score2:0,sets:[{s1:6,s2:0},{s1:6,s2:1},{s1:6,s2:2}]},
   ]},
-  { round:4,   date:"05 Aug 2026", matches:[
-    { t1:"t2", t2:"t4", scores:["6-3","6-4","7-6"], result:[2,0] },
-    { t1:"t3", t2:"t1", scores:["6-7","6-1","6-1"], result:[2,1] },
+  { round:9, matches:[
+    {t1:"t1",t2:"t5",score1:3,score2:0,sets:[{s1:6,s2:1},{s1:6,s2:2},{s1:6,s2:0}]},
+    {t1:"t4",t2:"t3",score1:1,score2:3,sets:[{s1:3,s2:6},{s1:6,s2:3},{s1:2,s2:6},{s1:3,s2:6}]},
   ]},
-  { round:5,   date:"12 Aug 2026", matches:[
-    { t1:"t4", t2:"t1", scores:["7-6","6-4","7-6"], result:[2,0] },
-    { t1:"t3", t2:"t2", scores:["6-1","6-2","7-5"], result:[2,0] },
-  ]},
-  { round:6,   date:"19 Aug 2026", matches:[
-    { t1:"t2", t2:"t1", scores:["6-4","7-6","6-3"], result:[2,0] },
-    { t1:"t3", t2:"t4", scores:["6-3","6-1","6-3"], result:[2,0] },
-  ]},
-  { round:"SF",date:"26 Aug 2026", matches:[
-    { t1:"t2", t2:"t4", scores:["7-6","6-4"],       result:[2,0] },
-    { t1:"t1", t2:"t3", scores:["7-5","6-4","6-4"], result:[2,1] },
-  ]},
-  { round:"GF",date:"02 Sep 2026", matches:[
-    { t1:"t2", t2:"t1", scores:["6-4","4-6","6-3"], result:[2,1] },
-    { t1:"t3", t2:"t4", scores:["7-6","6-7","6-4"], result:[2,1] },
+  { round:10, matches:[
+    {t1:"t2",t2:"t4",score1:3,score2:0,sets:[{s1:6,s2:2},{s1:6,s2:3},{s1:6,s2:1}]},
+    {t1:"t3",t2:"t5",score1:3,score2:0,sets:[{s1:6,s2:1},{s1:6,s2:2},{s1:6,s2:0}]},
   ]},
 ];
 
-const SEASON1 = [
-  { week:1,  date:"03 Mar 2026", p1:"Keagan",  p2:"Brandon", p3:"Connor",  p4:"Byron",   s:[6,1,7,6,3,6], w:1 },
-  { week:1,  date:"03 Mar 2026", p1:"Graeme",  p2:"Michael", p3:"Darren",  p4:"John",    s:[6,3,2,6,6,1], w:1 },
-  { week:2,  date:"10 Mar 2026", p1:"Graeme",  p2:"Byron",   p3:"Keagan",  p4:"John",    s:[6,1,1,6,6,2], w:1 },
-  { week:2,  date:"10 Mar 2026", p1:"Connor",  p2:"Brandon", p3:"Darren",  p4:"Michael", s:[6,0,1,6,6,2], w:1 },
-  { week:3,  date:"17 Mar 2026", p1:"Keagan",  p2:"Michael", p3:"Darren",  p4:"Byron",   s:[6,2,6,3,4,6], w:1 },
-  { week:3,  date:"17 Mar 2026", p1:"John",    p2:"Brandon", p3:"Connor",  p4:"Graeme",  s:[6,2,3,6,3,6], w:1 },
-  { week:4,  date:"23 Mar 2026", p1:"Michael", p2:"Connor",  p3:"Keagan",  p4:"Darren",  s:[6,0,6,4,6,1], w:1 },
-  { week:4,  date:"23 Mar 2026", p1:"John",    p2:"Byron",   p3:"Brandon", p4:"Graeme",  s:[6,4,6,4,7,2], w:1 },
-  { week:5,  date:"30 Mar 2026", p1:"Michael", p2:"Byron",   p3:"Keagan",  p4:"Connor",  s:[6,3,6,4,7,6], w:1 },
-  { week:5,  date:"30 Mar 2026", p1:"Graeme",  p2:"John",    p3:"Brandon", p4:"Nathan",  s:[6,0,6,3,6,2], w:1 },
-  { week:6,  date:"06 Apr 2026", p1:"Keagan",  p2:"Byron",   p3:"Graeme",  p4:"Brandon", s:[6,3,4,6,7,6], w:1 },
-  { week:7,  date:"13 Apr 2026", p1:"Michael", p2:"Brandon", p3:"Keagan",  p4:"Byron",   s:[7,5,6,3,6,1], w:1 },
-  { week:7,  date:"13 Apr 2026", p1:"Graeme",  p2:"Connor",  p3:"Darren",  p4:"John",    s:[6,1,6,0,4,6], w:1 },
-  { week:8,  date:"20 Apr 2026", p1:"Keagan",  p2:"Nathan",  p3:"Darren",  p4:"Graeme",  s:[7,5,6,2,6,2], w:1 },
-  { week:8,  date:"20 Apr 2026", p1:"Brandon", p2:"Michael", p3:"John",    p4:"Connor",  s:[6,2,6,3,6,3], w:1 },
-  { week:9,  date:"06 May 2026", p1:"Keagan",  p2:"Michael", p3:"Nathan",  p4:"Darren",  s:[6,2,4,6,6,1], w:1 },
-  { week:9,  date:"06 May 2026", p1:"John",    p2:"Byron",   p3:"Graeme",  p4:"Brandon", s:[6,3,6,7,4,6], w:1 },
-  { week:10, date:"12 May 2026", p1:"Byron",   p2:"Michael", p3:"Keagan",  p4:"Darren",  s:[6,3,6,2,6,2], w:1 },
-  { week:10, date:"12 May 2026", p1:"John",    p2:"Brandon", p3:"Graeme",  p4:"Connor",  s:[6,4,6,1,5,7], w:1 },
-  { week:11, date:"19 May 2026", p1:"Brandon", p2:"Michael", p3:"Keagan",  p4:"Nathan",  s:[6,4,6,3,7,6], w:1 },
-  { week:11, date:"19 May 2026", p1:"Shaun",   p2:"Byron",   p3:"Graeme",  p4:"John",    s:[6,0,6,4,6,2], w:1 },
-];
-const SEASON2 = [
-  { week:1, date:"26 May 2026", p1:"Michael",p2:"Byron",  p3:"Keagan", p4:"Nathan",  s:[3,6,6,7,5,7], w:1 },
-  { week:1, date:"26 May 2026", p1:"John",   p2:"Brandon",p3:"Connor", p4:"Graeme",  s:[3,6,3,6,7,5], w:1 },
-  { week:2, date:"02 Jun 2026", p1:"Graeme", p2:"Michael",p3:"Keagan", p4:"Byron",   s:[6,7,6,2,7,6], w:1 },
-  { week:2, date:"02 Jun 2026", p1:"Brandon",p2:"Connor", p3:"Darren", p4:"John",    s:[6,1,6,3,6,2], w:1 },
-  { week:3, date:"09 Jun 2026", p1:"Graeme", p2:"Michael",p3:"Keagan", p4:"John",    s:[6,4,6,7,6,4], w:1 },
-  { week:3, date:"09 Jun 2026", p1:"Connor", p2:"Byron",  p3:"Darren", p4:"Nathan",  s:[6,3,3,6,6,1], w:1 },
-  { week:4, date:"16 Jun 2026", p1:"Keagan", p2:"Connor", p3:"Graeme", p4:"John",    s:[6,0,6,4,6,1], w:1 },
-  { week:4, date:"16 Jun 2026", p1:"Byron",  p2:"Nathan", p3:"Michael",p4:"Darren",  s:[6,7,6,1,6,3], w:1 },
-  { week:5, date:"23 Jun 2026", p1:"Keagan", p2:"Brandon",p3:"Graeme", p4:"Michael", s:[6,2,6,4,2,6], w:1 },
-  { week:5, date:"23 Jun 2026", p1:"Connor", p2:"Nathan", p3:"Byron",  p4:"Darren",  s:[7,5,6,2,6,1], w:1 },
-  { week:6, date:"30 Jun 2026", p1:"Graeme", p2:"Nathan", p3:"Keagan", p4:"Brandon", s:[6,2,4,6,6,3], w:1 },
-  { week:6, date:"30 Jun 2026", p1:"Connor", p2:"Darren", p3:"Byron",  p4:"John",    s:[4,6,6,4,6,2], w:1 },
-  { week:7, date:"07 Jul 2026", p1:"Michael",p2:"Connor", p3:"Darren", p4:"Byron",   s:[6,4,6,3,6,2], w:1 },
-  { week:7, date:"07 Jul 2026", p1:"Graeme", p2:"Nathan", p3:"Keagan", p4:"John",    s:[5,7,3,6,6,3], w:1 },
-];
-const SEASON3_IND = [
-  { week:1, date:"14 Jul 2026", p1:"Brandon",p2:"Graeme", p3:"Byron",  p4:"Keagan",  s:[6,4,5,7,4,6], w:1 },
-  { week:1, date:"14 Jul 2026", p1:"Darren", p2:"Connor", p3:"John",   p4:"Michael", s:[3,6,6,2,6,3], w:1 },
-  { week:2, date:"21 Jul 2026", p1:"John",   p2:"Michael",p3:"Brandon",p4:"Graeme",  s:[6,3,7,5,6,4], w:1 },
-  { week:2, date:"21 Jul 2026", p1:"Darren", p2:"Connor", p3:"Byron",  p4:"Keagan",  s:[6,4,7,5,7,5], w:1 },
-  { week:3, date:"30 Jul 2026", p1:"Darren", p2:"Connor", p3:"Brandon",p4:"Graeme",  s:[6,3,6,3,6,3], w:1 },
-  { week:3, date:"30 Jul 2026", p1:"Byron",  p2:"Keagan", p3:"Nathan", p4:"Brett",   s:[7,6,1,6,7,5], w:1 },
-  { week:4, date:"05 Aug 2026", p1:"Byron",  p2:"Keagan", p3:"Darren", p4:"Connor",  s:[6,3,6,4,7,6], w:1 },
-  { week:4, date:"05 Aug 2026", p1:"Michael",p2:"John",   p3:"Brandon",p4:"Graeme",  s:[6,7,6,1,6,1], w:1 },
-  { week:5, date:"12 Aug 2026", p1:"Darren", p2:"Connor", p3:"Brandon",p4:"Graeme",  s:[7,6,6,4,7,6], w:1 },
-  { week:5, date:"12 Aug 2026", p1:"Michael",p2:"John",   p3:"Byron",  p4:"Keagan",  s:[6,1,6,2,7,5], w:1 },
-  { week:6, date:"19 Aug 2026", p1:"Byron",  p2:"Keagan", p3:"Brandon",p4:"Graeme",  s:[6,4,7,6,6,3], w:1 },
-  { week:6, date:"19 Aug 2026", p1:"Michael",p2:"John",   p3:"Darren", p4:"Connor",  s:[6,3,6,1,6,3], w:1 },
-  { week:7, date:"26 Aug 2026", p1:"Byron",  p2:"Keagan", p3:"Darren", p4:"Connor",  s:[7,6,6,4,0,0], w:1 },
-  { week:7, date:"26 Aug 2026", p1:"Brandon",p2:"Graeme", p3:"Michael",p4:"John",    s:[7,5,6,4,6,4], w:1 },
-  { week:8, date:"02 Sep 2026", p1:"Byron",  p2:"Keagan", p3:"Brandon",p4:"Graeme",  s:[6,4,4,6,6,3], w:1 },
-  { week:8, date:"02 Sep 2026", p1:"Michael",p2:"John",   p3:"Darren", p4:"Connor",  s:[7,6,6,7,6,4], w:1 },
+const S3_SEMIS = [
+  { match:"SF1", t1:"t2", t2:"t1", score1:3, score2:1, sets:[{s1:6,s2:3},{s1:4,s2:6},{s1:6,s2:4},{s1:6,s2:3}] },
+  { match:"SF2", t1:"t3", t2:"t4", score1:3, score2:0, sets:[{s1:6,s2:2},{s1:6,s2:3},{s1:6,s2:4}] },
 ];
 
-const ALL_HIST_PLAYERS = ["Brandon","Brett","Byron","Connor","Darren","Graeme","John","Keagan","Michael","Nathan"];
-const PALETTE = ["#00d4ff","#f472b6","#ffd700","#ff5252","#fb923c","#34d399","#a78bfa","#60a5fa","#00e676","#facc15","#e879f9","#38bdf8"];
-function pColor(n){const order=[...ALL_HIST_PLAYERS,"Glenn"];const i=order.indexOf(n);return PALETTE[i>=0?i:11];}
-function initials(n){return n.slice(0,2).toUpperCase();}
+const S3_FINAL = { match:"F", t1:"t2", t2:"t3", score1:3, score2:1, sets:[{s1:6,s2:3},{s1:4,s2:6},{s1:6,s2:4},{s1:6,s2:2}] };
 
-const PLAYER_PHOTOS={};
-const PLAYTOMIC_LINKS={
-  Brandon:"https://app.playtomic.com/profile/user/3595990",Darren:"https://app.playtomic.com/profile/user/4033294",
-  Byron:"https://app.playtomic.com/profile/user/6263685",Keagan:"https://app.playtomic.com/profile/user/5799405",
-  Graeme:"https://app.playtomic.com/profile/user/11610652",John:"https://app.playtomic.com/profile/user/7423258",
-  Connor:"https://app.playtomic.com/profile/user/9387132",Nathan:"https://app.playtomic.com/profile/user/6810247",
-  Michael:"https://app.playtomic.com/profile/user/4203130",
-};
-
-function Avatar({name,size=36,ring=false}){
-  const c=pColor(name),photo=PLAYER_PHOTOS[name];
-  return photo?(
-    <div style={{width:size,height:size,borderRadius:"50%",overflow:"hidden",flexShrink:0,border:`2px solid ${c}`,boxShadow:ring?`0 0 12px ${c}44`:"none"}}>
-      <img src={photo} alt={name} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-    </div>
-  ):(
-    <div style={{width:size,height:size,borderRadius:"50%",background:`${c}22`,border:`2px solid ${c}`,display:"flex",alignItems:"center",justifyContent:"center",color:c,fontWeight:900,fontSize:size*0.3,flexShrink:0,boxShadow:ring?`0 0 12px ${c}44`:"none"}}>
-      {initials(name)}
-    </div>
-  );
-}
-
-function ShareBtn({getText}){
-  const share=()=>{
-    const text=getText();
-    try{navigator.clipboard.writeText(text);}catch(e){}
-    setTimeout(()=>window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank"),200);
-  };
-  function getT(id){return TEAMS.find(t=>t.id===id);}
-  function weekGroups(arr){return[...new Set(arr.map(m=>m.week))].sort((a,b)=>b-a);}
-
-  return(    <button onClick={share} style={{display:"flex",alignItems:"center",gap:6,padding:"7px 16px",background:"#25d366",border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      Share
-    </button>
-  );
-}
-
-function MatchCard({m,accent}){
-  const winners=[m.p1,m.p2],losers=[m.p3,m.p4];
-  const ws=[m.s[0],m.s[2],m.s[4]],ls=[m.s[1],m.s[3],m.s[5]];
-  return(
-    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
-      <div style={{height:3,background:`linear-gradient(90deg,${accent},${accent}44)`}}/>
-      {[[winners,ws,ls,true],[losers,ls,ws,false]].map(([team,ts,os,won],ri)=>(
-        <div key={ri} style={{display:"flex",alignItems:"center",padding:"13px 16px",background:won?"#00e67608":"transparent",borderBottom:ri===0?`1px solid ${C.border}44`:"none"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
-            <div style={{display:"flex",flexShrink:0}}>
-              {team.map((n,ni)=><div key={n} style={{marginLeft:ni>0?-10:0,zIndex:ni}}><Avatar name={n} size={34}/></div>)}
-            </div>
-            <div style={{minWidth:0}}>
-              <div style={{fontWeight:800,fontSize:13,color:won?C.text:C.muted,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{team[0]} & {team[1]}</div>
-              {won&&<div style={{fontSize:9,fontWeight:800,color:C.green,textTransform:"uppercase",letterSpacing:"0.06em",marginTop:1}}>Winner 🏆</div>}
-            </div>
-          </div>
-          <div style={{display:"flex",gap:10,flexShrink:0,marginLeft:8}}>
-            {ts.map((sc,si)=>sc!==undefined&&sc!==0&&(
-              <div key={si} style={{textAlign:"center",minWidth:22}}>
-                <div style={{fontSize:22,fontWeight:900,lineHeight:1,color:sc>os[si]?C.text:"#444466"}}>{sc}</div>
-                <div style={{fontSize:9,color:"#333355",fontWeight:700}}>S{si+1}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ── SEASON 4 POINTS ────────────────────────────────────────────────────────
-function calcS4Stats(){
-  const stats={};
-  S4_PLAYERS.forEach(p=>stats[p]={name:p,played:0,wins:0,losses:0,pts:0,setsW:0,setsL:0});
-  S4_SCHEDULE.forEach(week=>{
-    week.matches.forEach(m=>{
-      if(!m.scores||!m.result)return;
-      const [ws,ls]=m.result;
-      const t1Won=ws>ls;
-      const t1Pts=ws===3&&ls===0?3:ws>ls?2:ls>ws&&ws===1?1:0;
-      const t2Pts=ls===3&&ws===0?3:ls>ws?2:ws>ls&&ls===1?1:0;
-      [m.p1,m.p2].forEach(p=>{
-        if(!stats[p])return;
-        stats[p].played++;stats[p].setsW+=ws;stats[p].setsL+=ls;
-        if(t1Won){stats[p].wins++;stats[p].pts+=t1Pts;}
-        else{stats[p].losses++;stats[p].pts+=t1Pts;}
+function calcS4Stats(schedule) {
+  const stats = {};
+  S4_PLAYERS.forEach(p => stats[p] = {name:p, played:0, wins:0, losses:0, pts:0, setsW:0, setsL:0});
+  schedule.forEach(week => {
+    week.matches.forEach(m => {
+      if (!m.scores || !m.result) return;
+      const [ws, ls] = m.result;
+      const t1Won = ws > ls;
+      const t1Pts = ws===3&&ls===0 ? 3 : ws>ls ? 2 : ls>ws&&ws===1 ? 1 : 0;
+      const t2Pts = ls===3&&ws===0 ? 3 : ls>ws ? 2 : ws>ls&&ls===1 ? 1 : 0;
+      [m.p1, m.p2].forEach(p => {
+        if (!stats[p]) return;
+        stats[p].played++; stats[p].setsW += ws; stats[p].setsL += ls;
+        if (t1Won) { stats[p].wins++; stats[p].pts += t1Pts; }
+        else { stats[p].losses++; stats[p].pts += t1Pts; }
       });
-      [m.p3,m.p4].forEach(p=>{
-        if(!stats[p])return;
-        stats[p].played++;stats[p].setsW+=ls;stats[p].setsL+=ws;
-        if(!t1Won){stats[p].wins++;stats[p].pts+=t2Pts;}
-        else{stats[p].losses++;stats[p].pts+=t2Pts;}
+      [m.p3, m.p4].forEach(p => {
+        if (!stats[p]) return;
+        stats[p].played++; stats[p].setsW += ls; stats[p].setsL += ws;
+        if (!t1Won) { stats[p].wins++; stats[p].pts += t2Pts; }
+        else { stats[p].losses++; stats[p].pts += t2Pts; }
       });
     });
   });
-  return Object.values(stats).sort((a,b)=>b.pts-a.pts||(b.wins-a.wins)||(b.setsW-b.setsL)-(a.setsW-a.setsL));
+  return Object.values(stats).filter(p => p.played > 0)
+    .sort((a,b) => b.pts-a.pts || (b.wins-a.wins) || (b.setsW-b.setsL)-(a.setsW-a.setsL));
 }
 
-function calcHistStats(matches){
-  const stats={};
-  ALL_HIST_PLAYERS.forEach(p=>stats[p]={name:p,w:0,l:0,played:0});
-  matches.forEach(m=>{
-    const w1=m.w===1;
-    [m.p1,m.p2].forEach(p=>{if(stats[p]){stats[p].played++;if(w1)stats[p].w++;else stats[p].l++;}});
-    [m.p3,m.p4].forEach(p=>{if(stats[p]){stats[p].played++;if(!w1)stats[p].w++;else stats[p].l++;}});
+function calcTeamStandings() {
+  const standings = {};
+  TEAMS.forEach(t => standings[t.id] = {id:t.id, name:t.name, color:t.color, emoji:t.emoji, p:0, w:0, l:0, pts:0, gamesW:0, gamesL:0});
+  S3_SCHEDULE.forEach(round => {
+    round.matches.forEach(m => {
+      if (m.score1 === null) return;
+      standings[m.t1].p++; standings[m.t2].p++;
+      standings[m.t1].gamesW += m.score1; standings[m.t1].gamesL += m.score2;
+      standings[m.t2].gamesW += m.score2; standings[m.t2].gamesL += m.score1;
+      if (m.score1 > m.score2) {
+        standings[m.t1].w++; standings[m.t1].pts += 2;
+        standings[m.t2].l++;
+      } else {
+        standings[m.t2].w++; standings[m.t2].pts += 2;
+        standings[m.t1].l++;
+      }
+    });
   });
-  return stats;
+  return Object.values(standings).sort((a,b) => b.pts-a.pts || (b.gamesW-b.gamesL)-(a.gamesW-a.gamesL));
 }
 
-function calcTeamStandings(schedule){
-  const pts={t1:0,t2:2,t3:0,t4:0},sw={t1:0,t2:0,t3:0,t4:0},sl={t1:0,t2:0,t3:0,t4:0},played={t1:0,t2:0,t3:0,t4:0};
-  schedule.forEach(r=>r.matches.forEach(m=>{
-    if(!m.scores||!m.result||m.t1==="t5"||m.t2==="t5")return;
-    played[m.t1]++;played[m.t2]++;
-    const[s1,s2]=m.result;
-    sw[m.t1]+=s1;sl[m.t1]+=s2;sw[m.t2]+=s2;sl[m.t2]+=s1;
-    if(s1>s2){pts[m.t1]+=s1===2&&s2===0?3:2;pts[m.t2]+=s2===1?1:0;}
-    else{pts[m.t2]+=s2===2&&s1===0?3:2;pts[m.t1]+=s1===1?1:0;}
-  }));
-  played["t2"]++;played["t3"]++;
-  return TEAMS.filter(t=>t.id!=="t5").map(t=>({...t,pts:pts[t.id]||0,sw:sw[t.id]||0,sl:sl[t.id]||0,played:played[t.id]||0})).sort((a,b)=>b.pts-a.pts||(b.sw-b.sl)-(a.sw-a.sl));
+function calcHistStats(liveSchedule) {
+  const stats = {};
+  const addPlayer = p => { if (!stats[p]) stats[p] = {name:p, played:0, wins:0, losses:0, setsW:0, setsL:0}; };
+  liveSchedule.forEach(week => {
+    week.matches.forEach(m => {
+      if (!m.scores || !m.result) return;
+      const [ws, ls] = m.result;
+      [m.p1,m.p2].forEach(p => {
+        addPlayer(p); stats[p].played++; stats[p].setsW+=ws; stats[p].setsL+=ls;
+        if (ws>ls) stats[p].wins++; else stats[p].losses++;
+      });
+      [m.p3,m.p4].forEach(p => {
+        addPlayer(p); stats[p].played++; stats[p].setsW+=ls; stats[p].setsL+=ws;
+        if (ls>ws) stats[p].wins++; else stats[p].losses++;
+      });
+    });
+  });
+  S3_SCHEDULE.forEach(round => {
+    round.matches.forEach(m => {
+      if (m.score1 === null) return;
+      const t1 = TEAMS.find(t=>t.id===m.t1); const t2 = TEAMS.find(t=>t.id===m.t2);
+      if (!t1||!t2) return;
+      [t1.p1,t1.p2].forEach(p => {
+        addPlayer(p); stats[p].played++;
+        if (m.score1>m.score2) stats[p].wins++; else stats[p].losses++;
+      });
+      [t2.p1,t2.p2].forEach(p => {
+        addPlayer(p); stats[p].played++;
+        if (m.score2>m.score1) stats[p].wins++; else stats[p].losses++;
+      });
+    });
+  });
+  [...S3_SEMIS, S3_FINAL].forEach(m => {
+    const t1=TEAMS.find(t=>t.id===m.t1); const t2=TEAMS.find(t=>t.id===m.t2);
+    if(!t1||!t2) return;
+    [t1.p1,t1.p2].forEach(p=>{addPlayer(p);stats[p].played++;if(m.score1>m.score2)stats[p].wins++;else stats[p].losses++;});
+    [t2.p1,t2.p2].forEach(p=>{addPlayer(p);stats[p].played++;if(m.score2>m.score1)stats[p].wins++;else stats[p].losses++;});
+  });
+  return Object.values(stats).sort((a,b)=>b.wins-a.wins||b.played-a.played);
 }
 
-const ADMIN_PIN="1234";
-const TODAY=new Date("2026-09-14");
+function Avatar({name, size=32}) {
+  const color = PLAYER_COLORS[name] || "#888";
+  const initials = name.slice(0,2).toUpperCase();
+  return (
+    <div style={{
+      width:size, height:size, borderRadius:"50%", background:color+"33",
+      border:`2px solid ${color}`, display:"flex", alignItems:"center",
+      justifyContent:"center", fontSize:size*0.35, fontWeight:700,
+      color:color, flexShrink:0, letterSpacing:"-0.5px"
+    }}>{initials}</div>
+  );
+}
 
-export default function App(){
-  const [view,setView]=useState("home");
-  const [selPlayer,setSelPlayer]=useState(null);
-  const [adminMode,setAdminMode]=useState(false);
-  const [pinModal,setPinModal]=useState(false);
-  const [pin,setPin]=useState("");
-  const [pinErr,setPinErr]=useState(false);
-  const [s4schedule,setS4Schedule]=useState(S4_SCHEDULE);
-  const [fixtures,setFixtures]=useState([]);
-  const [toast,setToast]=useState("");
-  const [inputScores,setInputScores]=useState({});
-  const [newFixture,setNewFixture]=useState({date:"",time:"",venue:"",teams:""});
-  const [showAddFixture,setShowAddFixture]=useState(false);
+function ScoreEntry({ liveSchedule }) {
+  const [pinInput, setPinInput] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
+  const [pinError, setPinError] = useState(false);
+  const [season, setSeason] = useState("s4");
+  const [week, setWeek] = useState("1");
+  const [matchIdx, setMatchIdx] = useState("0");
+  const [sets, setSets] = useState([{a:"",b:""},{a:"",b:""},{a:"",b:""}]);
+  const [status, setStatus] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-  const showToast=msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);};
-  const handlePin=k=>{
-    if(k==="⌫"){setPin(p=>p.slice(0,-1));return;}
-    if(pin.length>=4)return;
-    const next=pin+k;setPin(next);
-    if(next.length===4)setTimeout(()=>{if(next===ADMIN_PIN){setAdminMode(true);setPinModal(false);setPin("");setPinErr(false);showToast("Admin on ✓");}else{setPinErr(true);setPin("");setTimeout(()=>setPinErr(false),800);}},120);
+  const handlePin = () => {
+    if (pinInput === ADMIN_PIN) { setUnlocked(true); setPinError(false); }
+    else { setPinError(true); setPinInput(""); }
   };
 
-  const s4stats=useMemo(()=>calcS4Stats(),[s4schedule]);
-  const s3standings=useMemo(()=>calcTeamStandings(S3_SCHEDULE),[]);
-  const histStats=useMemo(()=>calcHistStats([...SEASON1,...SEASON2,...SEASON3_IND]),[]);
-  const allStats=useMemo(()=>calcHistStats([...SEASON1,...SEASON2,...SEASON3_IND]),[]);
+  const weekMatches = useMemo(() => {
+    const w = liveSchedule.find(w => w.week === parseInt(week));
+    return w ? w.matches : [];
+  }, [week, liveSchedule]);
 
-  const activeFixtures=fixtures.filter(f=>new Date(f.date)>=TODAY);
-  const completedWeeks=s4schedule.filter(w=>w.matches.some(m=>m.scores));
-  const lastWeek=completedWeeks.length>0?completedWeeks[completedWeeks.length-1]:null;
+  const selectedMatch = weekMatches[parseInt(matchIdx)];
 
-  const saveS4Result=(wi,mi)=>{
-    const key=`${wi}-${mi}`,val=inputScores[key]||"";
-    const parts=val.split(",").map(s=>s.trim());
-    let s1=0,s2=0;
-    const valid=parts.length>=2&&parts.every(p=>{const[a,b]=p.split("-").map(Number);if(isNaN(a)||isNaN(b))return false;if(a>b)s1++;else s2++;return true;});
-    if(!valid){showToast("Format: 6-4, 3-6, 6-2");return;}
-    setS4Schedule(prev=>{const ns=JSON.parse(JSON.stringify(prev));ns[wi].matches[mi].scores=parts;ns[wi].matches[mi].result=[s1,s2];return ns;});
-    setInputScores(p=>({...p,[key]:""}));
-    showToast("Result saved ✓");
+  const updateSet = (i, side, val) => {
+    const next = sets.map((s,idx) => idx===i ? {...s,[side]:val} : s);
+    setSets(next);
   };
 
-  const getT=id=>TEAMS.find(t=>t.id===id);
-  const weekGroups=arr=>[...new Set(arr.map(m=>m.week))].sort((a,b)=>b-a);
-  const card={background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden"};
+  const handleSubmit = async () => {
+    if (!selectedMatch) return;
+    const parsedSets = sets.map(s => ({a:parseInt(s.a)||0, b:parseInt(s.b)||0}));
+    const validSets = parsedSets.filter(s => s.a>0||s.b>0);
+    if (validSets.length < 2) { setStatus({type:"error",msg:"Enter at least 2 sets."}); return; }
 
-  const waS4=()=>{
-    let t=`🎾 *DEGENERATES PADEL LEAGUE*\n*⚡ Padelmaxxing — Season 4 Standings*\n\n`;
-    s4stats.filter(p=>p.played>0).forEach((p,i)=>t+=`${i+1}. ${p.name} — ${p.pts}pts (${p.wins}W ${p.losses}L)\n`);
-    if(lastWeek){
-      t+=`\n📅 *Week ${lastWeek.week} Results*\n`;
-      lastWeek.matches.forEach(m=>{if(m.scores){t+=`✅ ${m.p1} & ${m.p2} def. ${m.p3} & ${m.p4} (${m.scores.join(", ")})\n`;}});
+    let t1Sets=0, t2Sets=0;
+    const scoreStrings = [];
+    validSets.forEach(s => {
+      if (s.a > s.b) t1Sets++; else t2Sets++;
+      scoreStrings.push(`${s.a}-${s.b}`);
+    });
+
+    const result = [t1Sets, t2Sets];
+    const key = `w${week}m${matchIdx}`;
+
+    setSaving(true);
+    try {
+      await set(ref(db, `scores/s4/${key}`), { scores: scoreStrings, result });
+      setStatus({type:"success", msg:"✅ Score saved! Standings updated."});
+      setSets([{a:"",b:""},{a:"",b:""},{a:"",b:""}]);
+      setMatchIdx("0");
+    } catch(e) {
+      setStatus({type:"error", msg:"❌ Failed to save. Check connection."});
     }
-    return t;
+    setSaving(false);
+    setTimeout(()=>setStatus(null), 4000);
   };
 
-  const NAV=[
-    {id:"home",    label:"Home",       icon:"🏠"},
-    {id:"s4",      label:"Season 4",   icon:"⚡"},
-    {id:"upcoming",label:"Upcoming",   icon:"📆"},
-    {id:"dpl",     label:"DPL S3",     icon:"🏆"},
-    {id:"s2",      label:"Season 2",   icon:"📅"},
-    {id:"s1",      label:"Season 1",   icon:"📜"},
-    {id:"players", label:"Players",    icon:"👥"},
-  ];
+  const s = {
+    card: { background:"#12121a", borderRadius:16, padding:24, border:"1px solid #1e1e2e" },
+    label: { color:"#888", fontSize:13, marginBottom:6, display:"block" },
+    select: { width:"100%", background:"#1a1a2e", color:"#e0e0e0", border:"1px solid #2a2a3e",
+      borderRadius:8, padding:"10px 12px", fontSize:15, outline:"none", marginBottom:16 },
+    input: { background:"#1a1a2e", color:"#e0e0e0", border:"1px solid #2a2a3e",
+      borderRadius:8, padding:"10px 0", fontSize:18, fontWeight:700, outline:"none",
+      textAlign:"center", width:"64px" },
+    btn: { background:"#00d4ff", color:"#0a0a0f", border:"none", borderRadius:10,
+      padding:"12px 28px", fontSize:16, fontWeight:700, cursor:"pointer", width:"100%" },
+    pinInput: { background:"#1a1a2e", color:"#e0e0e0", border:"1px solid #2a2a3e",
+      borderRadius:8, padding:"12px 16px", fontSize:20, fontWeight:700, outline:"none",
+      textAlign:"center", width:"160px", letterSpacing:8 },
+  };
 
-  // Medal colours
-  const MEDALS=["🥇","🥈","🥉"];
+  if (!unlocked) {
+    return (
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",paddingTop:60,gap:24}}>
+        <div style={{fontSize:48}}>🔐</div>
+        <div style={{color:"#e0e0e0",fontSize:20,fontWeight:700}}>Score Entry</div>
+        <div style={{color:"#888",fontSize:14}}>Enter admin PIN to continue</div>
+        <input
+          type="password" value={pinInput} maxLength={4}
+          onChange={e=>setPinInput(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&handlePin()}
+          style={s.pinInput} placeholder="••••"
+        />
+        {pinError && <div style={{color:"#ff5252",fontSize:14}}>Incorrect PIN. Try again.</div>}
+        <button onClick={handlePin} style={{...s.btn,width:180}}>Unlock</button>
+      </div>
+    );
+  }
 
-  return(
-    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','system-ui',sans-serif",paddingBottom:80}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap');*{box-sizing:border-box;margin:0;padding:0}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#1e1e2e;border-radius:4px}input,select,textarea{background:#1a1a2e!important;color:#e2e8f0!important;border:1px solid #2d2d4e!important;border-radius:8px;padding:8px 12px;font-family:inherit;font-size:13px;outline:none;width:100%}input:focus{border-color:#f97316!important}`}</style>
-
-      {toast&&<div style={{position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",background:C.s4accent,color:"#fff",padding:"10px 24px",borderRadius:12,fontSize:13,fontWeight:800,zIndex:999,whiteSpace:"nowrap"}}>{toast}</div>}
-
-      {pinModal&&(
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.85)",backdropFilter:"blur(8px)"}}>
-          <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:24,padding:32,width:280}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:24}}>
-              <span style={{fontWeight:900,fontSize:16}}>Admin PIN</span>
-              <button onClick={()=>{setPinModal(false);setPin("");}} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:18}}>✕</button>
-            </div>
-            <div style={{display:"flex",justifyContent:"center",gap:10,marginBottom:24}}>
-              {[0,1,2,3].map(i=><div key={i} style={{width:44,height:44,borderRadius:12,border:`2px solid ${pin.length>i?(pinErr?"#ff5252":C.s4accent):C.border}`,background:pin.length>i?(pinErr?"#ff525222":`${C.s4accent}22`):"transparent",display:"flex",alignItems:"center",justifyContent:"center",color:pinErr?"#ff5252":C.s4accent,fontSize:20,fontWeight:900}}>{pin.length>i?"●":""}</div>)}
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-              {[1,2,3,4,5,6,7,8,9,"",0,"⌫"].map((k,i)=>k===""?<div key={i}/>:<button key={i} onClick={()=>handlePin(String(k))} style={{height:48,borderRadius:12,border:`1px solid ${C.border}`,background:C.card,color:C.text,fontWeight:900,fontSize:18,cursor:"pointer",fontFamily:"inherit"}}>{k}</button>)}
-            </div>
-            {pinErr&&<p style={{textAlign:"center",color:"#ff5252",fontSize:11,fontWeight:800,marginTop:12}}>Wrong PIN</p>}
-          </div>
+  return (
+    <div style={{maxWidth:520,margin:"0 auto",padding:"0 16px 40px"}}>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
+        <div style={{fontSize:28}}>📝</div>
+        <div>
+          <div style={{color:"#e0e0e0",fontSize:20,fontWeight:700}}>Score Entry</div>
+          <div style={{color:"#888",fontSize:13}}>Enter match results</div>
         </div>
-      )}
+      </div>
 
-      {/* NAV */}
-      <nav style={{background:`${C.card}f0`,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:50,backdropFilter:"blur(12px)"}}>
-        <div style={{maxWidth:1000,margin:"0 auto",padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-            {LOGO_SQUARE_URL?<img src={LOGO_SQUARE_URL} alt="DPL" style={{width:36,height:36,borderRadius:10,objectFit:"cover"}}/>:<div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#f97316,#ffd700)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🎾</div>}
-            <span style={{fontWeight:900,fontSize:15,letterSpacing:"-0.03em",color:C.s4accent}}>DPL</span>
+      <div style={s.card}>
+        <label style={s.label}>Season</label>
+        <select value={season} onChange={e=>{setSeason(e.target.value);setWeek("1");setMatchIdx("0");}} style={s.select}>
+          <option value="s4">Season 4 — Padelmaxxing</option>
+          <option value="s3">Season 3 — DPL Team League</option>
+        </select>
+
+        {season === "s3" ? (
+          <div style={{background:"#1a1a2e",borderRadius:10,padding:20,textAlign:"center",color:"#888"}}>
+            🔒 Season 3 scores are locked and cannot be edited.
           </div>
-          <div style={{display:"flex",gap:2,overflowX:"auto",flex:1}}>
-            {NAV.map(n=><button key={n.id} onClick={()=>{setView(n.id);setSelPlayer(null);}} style={{padding:"6px 10px",borderRadius:8,border:"none",background:view===n.id?`${n.id==="s4"?C.s4accent:C.accent}22`:"transparent",color:view===n.id?(n.id==="s4"?C.s4accent:C.accent):C.muted,cursor:"pointer",fontWeight:700,fontSize:11,fontFamily:"inherit",whiteSpace:"nowrap"}}>{n.icon} {n.label}</button>)}
+        ) : (
+          <>
+            <label style={s.label}>Week</label>
+            <select value={week} onChange={e=>{setWeek(e.target.value);setMatchIdx("0");}} style={s.select}>
+              {liveSchedule.map(w => (
+                <option key={w.week} value={String(w.week)}>Week {w.week} — {w.date}</option>
+              ))}
+            </select>
+
+            <label style={s.label}>Match</label>
+            <select value={matchIdx} onChange={e=>setMatchIdx(e.target.value)} style={s.select}>
+              {weekMatches.map((m,i) => (
+                <option key={i} value={String(i)}>
+                  {m.p1} & {m.p2} vs {m.p3} & {m.p4}
+                  {m.scores ? " ✓" : ""}
+                </option>
+              ))}
+            </select>
+
+            {selectedMatch && (
+              <div style={{background:"#0a0a0f",borderRadius:10,padding:16,marginBottom:16}}>
+                <div style={{color:"#888",fontSize:12,marginBottom:12,textTransform:"uppercase",letterSpacing:1}}>Teams</div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{color:"#00d4ff",fontWeight:700,fontSize:15}}>{selectedMatch.p1}</div>
+                    <div style={{color:"#888",fontSize:12}}>& {selectedMatch.p2}</div>
+                  </div>
+                  <div style={{color:"#444",fontWeight:700,fontSize:18}}>VS</div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{color:"#ff9800",fontWeight:700,fontSize:15}}>{selectedMatch.p3}</div>
+                    <div style={{color:"#888",fontSize:12}}>& {selectedMatch.p4}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={{marginBottom:16}}>
+              {["Set 1","Set 2","Set 3"].map((label,i) => (
+                <div key={i} style={{marginBottom:12}}>
+                  <div style={{color:"#888",fontSize:12,marginBottom:6}}>{label}{i===2?" (optional if 3-0)":""}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <input
+                      type="number" min={0} max={99} value={sets[i].a}
+                      onChange={e=>updateSet(i,"a",e.target.value)}
+                      style={{...s.input,borderColor: sets[i].a?"#00d4ff":"#2a2a3e"}}
+                      placeholder="0"
+                    />
+                    <div style={{color:"#444",fontWeight:700,fontSize:20,flex:1,textAlign:"center"}}>—</div>
+                    <input
+                      type="number" min={0} max={99} value={sets[i].b}
+                      onChange={e=>updateSet(i,"b",e.target.value)}
+                      style={{...s.input,borderColor: sets[i].b?"#ff9800":"#2a2a3e"}}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {status && (
+              <div style={{
+                padding:"12px 16px", borderRadius:8, marginBottom:16,
+                background: status.type==="success" ? "#00e67622" : "#ff525222",
+                color: status.type==="success" ? "#00e676" : "#ff5252",
+                fontWeight:600, fontSize:14
+              }}>{status.msg}</div>
+            )}
+
+            <button onClick={handleSubmit} disabled={saving} style={{
+              ...s.btn,
+              opacity: saving ? 0.6 : 1,
+              cursor: saving ? "not-allowed" : "pointer"
+            }}>
+              {saving ? "Saving..." : "Submit Score"}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  const [tab, setTab] = useState("home");
+  const [liveSchedule, setLiveSchedule] = useState(S4_SCHEDULE_BASE);
+
+  useEffect(() => {
+    const scoresRef = ref(db, 'scores/s4');
+    const unsub = onValue(scoresRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      const merged = S4_SCHEDULE_BASE.map((week, wi) => ({
+        ...week,
+        matches: week.matches.map((m, mi) => {
+          const key = `w${wi+1}m${mi}`;
+          if (data[key]) return {...m, ...data[key]};
+          return m;
+        })
+      }));
+      setLiveSchedule(merged);
+    });
+    return () => unsub();
+  }, []);
+
+  const s4Stats = useMemo(() => calcS4Stats(liveSchedule), [liveSchedule]);
+  const teamStandings = useMemo(() => calcTeamStandings(), []);
+  const histStats = useMemo(() => calcHistStats(liveSchedule), [liveSchedule]);
+
+  const recentResults = useMemo(() => {
+    const results = [];
+    for (let wi = liveSchedule.length-1; wi>=0; wi--) {
+      for (let mi = liveSchedule[wi].matches.length-1; mi>=0; mi--) {
+        const m = liveSchedule[wi].matches[mi];
+        if (m.scores && m.result) {
+          results.push({...m, week: liveSchedule[wi].week, date: liveSchedule[wi].date});
+          if (results.length >= 4) return results;
+        }
+      }
+    }
+    return results;
+  }, [liveSchedule]);
+
+  const getTeam = id => TEAMS.find(t => t.id === id);
+
+  const waS4 = () => {
+    let t = `🎾 *DEGENERATES PADEL LEAGUE*\n*🏓 Padelmaxxing — Season 4 Standings*\n\n`;
+    s4Stats.forEach((p,i) => {
+      const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":"   ";
+      t += `${medal} ${i+1}. ${p.name.padEnd(10)} ${p.pts}pts  ${p.wins}W-${p.losses}L\n`;
+    });
+    t += `\n_Updated ${TODAY.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}_`;
+    navigator.clipboard.writeText(t).catch(()=>{});
+    alert("Copied to clipboard! Paste into WhatsApp 🎾");
+  };
+
+  const styles = {
+    app: { minHeight:"100vh", background:"#0a0a0f", color:"#e0e0e0", fontFamily:"'Inter',-apple-system,BlinkMacSystemFont,sans-serif" },
+    nav: { background:"#0d0d1a", borderBottom:"1px solid #1e1e2e", position:"sticky", top:0, zIndex:100 },
+    navInner: { maxWidth:900, margin:"0 auto", display:"flex", overflowX:"auto", padding:"0 8px" },
+    tab: (active) => ({
+      padding:"14px 16px", fontSize:13, fontWeight:600, cursor:"pointer",
+      color: active?"#00d4ff":"#666", borderBottom: active?"2px solid #00d4ff":"2px solid transparent",
+      whiteSpace:"nowrap", background:"none", border:"none", borderBottom: active?"2px solid #00d4ff":"2px solid transparent",
+      transition:"color 0.2s"
+    }),
+    main: { maxWidth:900, margin:"0 auto", padding:"24px 16px" },
+    card: { background:"#12121a", borderRadius:16, padding:20, border:"1px solid #1e1e2e", marginBottom:16 },
+    h2: { color:"#e0e0e0", fontSize:20, fontWeight:700, margin:"0 0 16px" },
+    h3: { color:"#888", fontSize:13, fontWeight:600, textTransform:"uppercase", letterSpacing:1, margin:"0 0 12px" },
+    badge: (color) => ({
+      display:"inline-block", background:color+"22", color:color,
+      borderRadius:6, padding:"2px 8px", fontSize:12, fontWeight:700
+    }),
+    statGrid: { display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:24 },
+    statCard: { background:"#12121a", borderRadius:14, padding:16, textAlign:"center", border:"1px solid #1e1e2e" },
+    statVal: { fontSize:32, fontWeight:800, color:"#00d4ff", lineHeight:1 },
+    statLbl: { fontSize:12, color:"#666", marginTop:4 },
+    table: { width:"100%", borderCollapse:"collapse" },
+    th: { color:"#555", fontSize:12, fontWeight:600, textTransform:"uppercase", padding:"8px 10px", textAlign:"left", borderBottom:"1px solid #1e1e2e" },
+    td: { padding:"10px 10px", borderBottom:"1px solid #0f0f1a", fontSize:14 },
+    pill: { display:"inline-flex", alignItems:"center", gap:6, background:"#1a1a2e", borderRadius:20, padding:"4px 10px", fontSize:13 },
+    matchCard: { background:"#0f0f1a", borderRadius:12, padding:16, marginBottom:10, border:"1px solid #1a1a2a" },
+    scoreRow: { display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 },
+    setScore: { display:"inline-block", background:"#1a1a2e", borderRadius:6, padding:"3px 10px", fontSize:13, fontWeight:700, margin:"0 2px" },
+  };
+
+  const renderHome = () => (
+    <div>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <img src={LOGO_BANNER_URL} alt="DPL" style={{maxWidth:"100%",borderRadius:12,maxHeight:140,objectFit:"cover"}} />
+      </div>
+      <div style={styles.statGrid}>
+        {[{v:"68",l:"Matches"},{v:"3",l:"Seasons"},{v:"10",l:"Players"}].map(x=>(
+          <div key={x.l} style={styles.statCard}>
+            <div style={styles.statVal}>{x.v}</div>
+            <div style={styles.statLbl}>{x.l}</div>
           </div>
-          <button onClick={()=>adminMode?setAdminMode(false):setPinModal(true)} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${adminMode?"#00e67655":C.border}`,background:adminMode?"#00e67611":"transparent",color:adminMode?"#00e676":C.muted,cursor:"pointer",fontWeight:800,fontSize:11,fontFamily:"inherit",flexShrink:0}}>
-            {adminMode?"🛡 Admin":"🔒"}
+        ))}
+      </div>
+
+      <div style={styles.card}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+          <div style={styles.h3}>🏓 Padelmaxxing — Current Standings</div>
+          <button onClick={waS4} style={{background:"#25D36622",color:"#25D366",border:"1px solid #25D36644",borderRadius:8,padding:"6px 12px",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+            📤 Share
           </button>
         </div>
-      </nav>
+        {s4Stats.slice(0,5).map((p,i) => (
+          <div key={p.name} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderBottom:"1px solid #0f0f1a"}}>
+            <div style={{width:24,color:i<3?["#ffd700","#c0c0c0","#cd7f32"][i]:"#444",fontWeight:700,fontSize:15,textAlign:"center"}}>
+              {i<3?["🥇","🥈","🥉"][i]:i+1}
+            </div>
+            <Avatar name={p.name} size={32} />
+            <div style={{flex:1,fontWeight:600}}>{p.name}</div>
+            <div style={{color:"#00d4ff",fontWeight:700,fontSize:15}}>{p.pts}pts</div>
+            <div style={{color:"#666",fontSize:13}}>{p.wins}W-{p.losses}L</div>
+          </div>
+        ))}
+      </div>
 
-      <main style={{maxWidth:1000,margin:"0 auto",padding:"20px 16px"}}>
-
-        {/* ═══════════════════════════════ HOME ═══════════════════════════════ */}
-        {view==="home"&&(
-          <div style={{display:"flex",flexDirection:"column",gap:24}}>
-
-            {/* Hero */}
-            <div style={{borderRadius:24,border:`1px solid #f9731633`,overflow:"hidden",position:"relative",background:C.card}}>
-              <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 20% 50%,#f9731610,transparent 60%),radial-gradient(ellipse at 80% 50%,#ffd70010,transparent 60%)",pointerEvents:"none"}}/>
-              <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"linear-gradient(90deg,#f97316,#ffd700,#f97316)"}}/>
-              <div style={{padding:"40px 28px",display:"flex",alignItems:"center",gap:28,flexWrap:"wrap"}}>
-                <div style={{flex:1,minWidth:240}}>
-                  {LOGO_BANNER_URL&&<img src={LOGO_BANNER_URL} alt="DPL" style={{maxWidth:"100%",height:"auto",maxHeight:80,marginBottom:16,display:"block"}}/>}
-                  <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#f9731611",border:"1px solid #f9731633",borderRadius:99,padding:"5px 14px",marginBottom:12}}>
-                    <span style={{width:7,height:7,borderRadius:"50%",background:C.s4accent,display:"inline-block",boxShadow:`0 0 8px ${C.s4accent}`}}/>
-                    <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.1em"}}>⚡ The Padelmaxxing — Season 4 Live</span>
-                  </div>
-                  <h1 style={{fontSize:38,fontWeight:900,lineHeight:1.05,letterSpacing:"-0.04em",marginBottom:10}}>
-                    <span style={{background:"linear-gradient(135deg,#f97316,#ffd700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>DEGENERATES</span>
-                    <br/><span style={{color:C.text}}>PADEL LEAGUE</span>
-                  </h1>
-                  <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:16}}>
-                    <button onClick={()=>setView("s4")} style={{padding:"10px 22px",background:C.s4accent,border:"none",borderRadius:12,color:"#fff",fontWeight:900,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Season 4 ⚡</button>
-                    <button onClick={()=>setView("dpl")} style={{padding:"10px 22px",background:"transparent",border:`1px solid ${C.border}`,borderRadius:12,color:C.text,fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>S3 Champions 🏆</button>
-                  </div>
-                </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10,minWidth:180}}>
-                  {[{v:"64",l:"Matches",c:C.s4accent},{v:"4",l:"Seasons",c:C.gold},{v:"10",l:"Players",c:C.green},{v:"7",l:"S4 Weeks",c:"#a78bfa"}].map(s=>(
-                    <div key={s.l} style={{background:`${s.c}0d`,border:`1px solid ${s.c}22`,borderRadius:14,padding:"14px 10px",textAlign:"center"}}>
-                      <div style={{fontSize:28,fontWeight:900,color:s.c,lineHeight:1}}>{s.v}</div>
-                      <div style={{fontSize:10,color:`${s.c}88`,fontWeight:800,textTransform:"uppercase",marginTop:3}}>{s.l}</div>
-                    </div>
-                  ))}
-                </div>
+      <div style={styles.card}>
+        <div style={styles.h3}>⚡ Recent Results</div>
+        {recentResults.map((m,i) => (
+          <div key={i} style={styles.matchCard}>
+            <div style={{color:"#555",fontSize:11,marginBottom:8}}>Week {m.week} · {m.date}</div>
+            <div style={styles.scoreRow}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <Avatar name={m.p1} size={24}/><Avatar name={m.p2} size={24}/>
+                <span style={{fontWeight:600,fontSize:14}}>{m.p1} & {m.p2}</span>
+              </div>
+              <div style={{display:"flex",gap:4}}>
+                {m.scores.map((s,si)=><span key={si} style={styles.setScore}>{s}</span>)}
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontWeight:600,fontSize:14}}>{m.p3} & {m.p4}</span>
+                <Avatar name={m.p3} size={24}/><Avatar name={m.p4} size={24}/>
               </div>
             </div>
-
-            {/* S4 Leaderboard snapshot */}
-            <div style={{...card}}>
-              <div style={{padding:"12px 18px",borderBottom:`1px solid ${C.border}`,background:`${C.s4accent}0d`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>⚡ The Padelmaxxing — Current Standings</span>
-                <button onClick={()=>setView("s4")} style={{fontSize:11,color:C.s4accent,background:"transparent",border:"none",cursor:"pointer",fontWeight:700,fontFamily:"inherit"}}>Full table →</button>
-              </div>
-              <div style={{padding:"8px 0"}}>
-                {s4stats.filter(p=>p.played>0).slice(0,5).map((p,i)=>(
-                  <div key={p.name} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 18px",borderBottom:`1px solid ${C.border}22`}}>
-                    <span style={{fontSize:i<3?18:13,minWidth:24,textAlign:"center",fontWeight:800,color:C.muted}}>{i<3?MEDALS[i]:i+1}</span>
-                    <Avatar name={p.name} size={32}/>
-                    <span style={{fontWeight:800,fontSize:14,flex:1}}>{p.name}</span>
-                    <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                      <span style={{fontSize:11,color:C.green,fontWeight:700}}>{p.wins}W</span>
-                      <span style={{fontSize:11,color:C.red,fontWeight:700}}>{p.losses}L</span>
-                      <span style={{fontSize:16,fontWeight:900,color:C.s4accent,minWidth:32,textAlign:"right"}}>{p.pts}<span style={{fontSize:9,color:C.muted,fontWeight:700}}>pts</span></span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* S3 Champions callout */}
-            <div style={{borderRadius:18,border:`1px solid ${C.gold}44`,padding:20,background:`${C.gold}08`,display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
-              <span style={{fontSize:40}}>🏆</span>
-              <div style={{flex:1}}>
-                <div style={{fontSize:10,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:2}}>Season 3 Champions</div>
-                <div style={{fontSize:20,fontWeight:900,color:C.gold}}>🌀 Circumserve</div>
-                <div style={{fontSize:12,color:C.muted,marginTop:2}}>Byron & Keagan · Grand Final Winners</div>
-              </div>
-              <button onClick={()=>setView("dpl")} style={{padding:"8px 18px",background:C.gold,border:"none",borderRadius:10,color:"#0a0a0f",fontWeight:900,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>View Season 3 →</button>
+            <div style={{textAlign:"center",marginTop:8}}>
+              <span style={styles.badge(m.result[0]>m.result[1]?"#00d4ff":"#ff9800")}>
+                {m.result[0]>m.result[1]?`${m.p1} & ${m.p2} won`:`${m.p3} & ${m.p4} won`} {m.result[0]}-{m.result[1]}
+              </span>
             </div>
           </div>
-        )}
+        ))}
+      </div>
+    </div>
+  );
 
-        {/* ═══════════════════════════════ SEASON 4 ═══════════════════════════ */}
-        {view==="s4"&&(
-          <div style={{display:"flex",flexDirection:"column",gap:20}}>
+  const renderS4 = () => {
+    const upcoming = [];
+    liveSchedule.forEach(w => {
+      w.matches.forEach(m => {
+        if (!m.scores) upcoming.push({...m, week:w.week, date:w.date});
+      });
+    });
+    return (
+      <div>
+        <div style={{background:"linear-gradient(135deg,#00d4ff22,#0a0a0f)",border:"1px solid #00d4ff33",borderRadius:16,padding:20,marginBottom:24,textAlign:"center"}}>
+          <div style={{fontSize:32,marginBottom:8}}>🏓</div>
+          <div style={{color:"#00d4ff",fontSize:22,fontWeight:800}}>Padelmaxxing</div>
+          <div style={{color:"#888",fontSize:14}}>Season 4 · Individual League</div>
+        </div>
 
-            {/* Banner */}
-            <div style={{borderRadius:20,overflow:"hidden",position:"relative",background:C.card,border:`1px solid #f9731644`}}>
-              <div style={{position:"absolute",top:0,left:0,right:0,height:4,background:"linear-gradient(90deg,#f97316,#ffd700,#f97316)"}}/>
-              <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 30% 50%,#f9731610,transparent 60%)",pointerEvents:"none"}}/>
-              <div style={{padding:"28px 24px",position:"relative",zIndex:1,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:16}}>
-                <div>
-                  <div style={{fontSize:10,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:6}}>Season 4 · Individual Format</div>
-                  <h2 style={{fontSize:28,fontWeight:900,letterSpacing:"-0.04em",marginBottom:4}}>
-                    <span style={{background:"linear-gradient(135deg,#f97316,#ffd700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>⚡ Padelmaxxing</span>
-                  </h2>
-                  <p style={{fontSize:13,color:C.muted}}>7 weeks pool play · Top 4 advance · Semi-Finals · Grand Final</p>
-                  <p style={{fontSize:11,color:C.muted,marginTop:4}}>Scoring: Win 3-0 = 3pts · 2-1 = 2pts · 1-2 = 1pt · 0-3 = 0pts</p>
-                </div>
-                <ShareBtn getText={waS4}/>
-              </div>
-            </div>
-
-            {/* League Table */}
-            <div style={card}>
-              <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,background:`${C.s4accent}0d`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>📊 League Table</span>
-                <span style={{fontSize:10,color:C.muted}}>After Week {completedWeeks.length}</span>
-              </div>
-              <div style={{overflowX:"auto"}}>
-                <table style={{width:"100%",borderCollapse:"collapse",minWidth:480}}>
-                  <thead>
-                    <tr style={{borderBottom:`2px solid ${C.border}`,background:C.surface}}>
-                      {["Pos","Player","Played","W","L","Set Diff","Points"].map(h=>(
-                        <th key={h} style={{padding:"10px 12px",fontSize:9,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",textAlign:h==="Player"?"left":"center"}}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {s4stats.map((p,i)=>{
-                      const sd=(p.setsW||0)-(p.setsL||0);
-                      const medal=i<3&&p.played>0?MEDALS[i]:null;
-                      return(
-                        <tr key={p.name} style={{borderBottom:`1px solid ${C.border}22`,background:i===0&&p.played>0?`${C.s4accent}08`:"transparent"}}
-                          onMouseEnter={e=>e.currentTarget.style.background=`${C.s4accent}0d`}
-                          onMouseLeave={e=>e.currentTarget.style.background=i===0&&p.played>0?`${C.s4accent}08`:"transparent"}>
-                          <td style={{padding:"12px",textAlign:"center"}}>
-                            {medal?<span style={{fontSize:18}}>{medal}</span>:<span style={{fontSize:12,fontWeight:800,color:C.muted}}>{i+1}</span>}
-                          </td>
-                          <td style={{padding:"12px 12px"}}>
-                            <div style={{display:"flex",alignItems:"center",gap:10}}>
-                              <Avatar name={p.name} size={30}/>
-                              <span style={{fontWeight:800,fontSize:13}}>{p.name}</span>
-                            </div>
-                          </td>
-                          <td style={{textAlign:"center",fontSize:13,color:C.muted,fontWeight:700}}>{p.played}</td>
-                          <td style={{textAlign:"center"}}><span style={{fontSize:13,fontWeight:900,color:C.green,background:"#00e67611",borderRadius:8,padding:"2px 10px"}}>{p.wins}</span></td>
-                          <td style={{textAlign:"center"}}><span style={{fontSize:13,fontWeight:900,color:C.red,background:"#ff525211",borderRadius:8,padding:"2px 10px"}}>{p.losses}</span></td>
-                          <td style={{textAlign:"center",fontSize:13,fontWeight:700,color:sd>0?C.green:sd<0?C.red:C.muted}}>{sd>0?`+${sd}`:sd}</td>
-                          <td style={{textAlign:"center"}}><span style={{fontSize:18,fontWeight:900,color:C.s4accent}}>{p.pts}</span></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div style={{padding:"10px 16px",borderTop:`1px solid ${C.border}`,fontSize:10,color:C.muted}}>
-                Top 4 players advance to Semi-Finals after Week 7
-              </div>
-            </div>
-
-            {/* Knockout Bracket */}
-            <div style={card}>
-              <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,background:"#7c3aed11"}}>
-                <span style={{fontSize:11,fontWeight:800,color:"#a78bfa",textTransform:"uppercase",letterSpacing:"0.08em"}}>⚡ Knockout Stage</span>
-              </div>
-              <div style={{padding:16,display:"flex",flexDirection:"column",gap:10}}>
-                <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Semi-Finals — TBD (after Week 7)</div>
-                {[{l:"Semi A",d:"1st vs 4th Place"},{l:"Semi B",d:"2nd vs 3rd Place"}].map(s=>(
-                  <div key={s.l} style={{background:"#7c3aed11",border:"1px solid #7c3aed33",borderRadius:10,padding:12}}>
-                    <span style={{fontSize:11,fontWeight:800,color:"#a78bfa"}}>{s.l}</span>
-                    <div style={{fontSize:12,color:C.muted,marginTop:2}}>{s.d}</div>
-                  </div>
-                ))}
-                <div style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em",marginTop:4}}>Finals — TBD</div>
-                <div style={{background:`${C.gold}11`,border:`1px solid ${C.gold}33`,borderRadius:10,padding:12}}>
-                  <div style={{fontSize:11,fontWeight:800,color:C.gold}}>🏆 Grand Final — Winner Semi A vs Winner Semi B</div>
-                </div>
-                <div style={{background:"#ff525211",border:"1px solid #ff525233",borderRadius:10,padding:12}}>
-                  <div style={{fontSize:11,fontWeight:800,color:"#ff5252"}}>💩 Toilet Bowl — Loser Semi A vs Loser Semi B</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Weekly Schedule */}
-            <div style={card}>
-              <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontSize:11,fontWeight:800,color:C.s4accent,textTransform:"uppercase",letterSpacing:"0.08em"}}>📅 Full Schedule</span>
-                {adminMode&&<span style={{fontSize:10,color:C.green}}>Admin mode — enter results below</span>}
-              </div>
-              {s4schedule.map((week,wi)=>(
-                <div key={wi} style={{borderBottom:`1px solid ${C.border}33`}}>
-                  <div style={{padding:"12px 20px",background:`${C.s4accent}08`,display:"flex",gap:10,alignItems:"center",borderBottom:`1px solid ${C.border}22`}}>
-                    <span style={{fontSize:12,fontWeight:800,color:C.s4accent}}>Week {week.week}</span>
-                    <span style={{fontSize:12,color:C.muted}}>· {week.date}</span>
-                    {week.matches.every(m=>m.scores)&&<span style={{fontSize:9,fontWeight:800,color:C.green,background:"#00e67611",borderRadius:99,padding:"2px 8px",marginLeft:4}}>COMPLETE ✓</span>}
-                  </div>
-                  {week.matches.map((m,mi)=>{
-                    const key=`${wi}-${mi}`;
-                    const t1Won=m.result&&m.result[0]>m.result[1];
-                    return(
-                      <div key={mi} style={{padding:"20px",borderBottom:mi<week.matches.length-1?`1px solid ${C.border}22`:"none",background:m.scores?t1Won?"#00e67605":"#ff525205":"transparent"}}>
-                        {/* Teams row */}
-                        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:m.scores?12:0,flexWrap:"wrap"}}>
-                          {/* Team 1 */}
-                          <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:160}}>
-                            <div style={{display:"flex"}}>{[m.p1,m.p2].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-10:0,zIndex:ni}}><Avatar name={n} size={36}/></div>)}</div>
-                            <div>
-                              <div style={{fontWeight:900,fontSize:14,color:m.scores&&t1Won?C.text:m.scores?C.muted:C.text}}>{m.p1} & {m.p2}</div>
-                              {m.scores&&t1Won&&<div style={{fontSize:9,fontWeight:800,color:C.green,textTransform:"uppercase",letterSpacing:"0.06em",marginTop:1}}>Winner 🏆</div>}
-                            </div>
-                          </div>
-                          {/* VS */}
-                          <div style={{width:32,height:32,borderRadius:"50%",background:C.surface,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900,color:C.muted,flexShrink:0}}>VS</div>
-                          {/* Team 2 */}
-                          <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:160}}>
-                            <div style={{display:"flex"}}>{[m.p3,m.p4].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-10:0,zIndex:ni}}><Avatar name={n} size={36}/></div>)}</div>
-                            <div>
-                              <div style={{fontWeight:900,fontSize:14,color:m.scores&&!t1Won?C.text:m.scores?C.muted:C.text}}>{m.p3} & {m.p4}</div>
-                              {m.scores&&!t1Won&&<div style={{fontSize:9,fontWeight:800,color:C.green,textTransform:"uppercase",letterSpacing:"0.06em",marginTop:1}}>Winner 🏆</div>}
-                            </div>
-                          </div>
-                        </div>
-                        {/* Scores or input */}
-                        {m.scores?(
-                          <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
-                            {m.scores.map((sc,si)=>(
-                              <span key={si} style={{fontSize:13,fontWeight:800,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"4px 12px",color:C.text}}>{sc}</span>
-                            ))}
-                          </div>
-                        ):adminMode?(
-                          <div style={{display:"flex",gap:8,alignItems:"center",marginTop:12}}>
-                            <input placeholder="e.g. 6-4, 3-6, 6-2" value={inputScores[key]||""} onChange={e=>setInputScores(p=>({...p,[key]:e.target.value}))} style={{maxWidth:180}}/>
-                            <button onClick={()=>saveS4Result(wi,mi)} style={{padding:"8px 18px",background:C.s4accent,border:"none",borderRadius:8,color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>Save Result</button>
-                          </div>
-                        ):(
-                          <div style={{marginTop:8}}>
-                            <span style={{fontSize:11,color:C.s4accent,background:`${C.s4accent}11`,border:`1px solid ${C.s4accent}22`,borderRadius:8,padding:"5px 14px",fontWeight:700}}>Upcoming</span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+        <div style={styles.card}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+            <div style={styles.h2}>Standings</div>
+            <button onClick={waS4} style={{background:"#25D36622",color:"#25D366",border:"1px solid #25D36644",borderRadius:8,padding:"6px 12px",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+              📤 WhatsApp
+            </button>
+          </div>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>#</th>
+                <th style={styles.th}>Player</th>
+                <th style={styles.th}>P</th>
+                <th style={styles.th}>W</th>
+                <th style={styles.th}>L</th>
+                <th style={styles.th}>Sets</th>
+                <th style={styles.th}>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {s4Stats.map((p,i) => (
+                <tr key={p.name} style={{background:i%2===0?"transparent":"#ffffff04"}}>
+                  <td style={styles.td}>
+                    <span style={{color:i<3?["#ffd700","#c0c0c0","#cd7f32"][i]:"#555",fontWeight:700}}>
+                      {i<3?["🥇","🥈","🥉"][i]:i+1}
+                    </span>
+                  </td>
+                  <td style={styles.td}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <Avatar name={p.name} size={26}/>
+                      <span style={{fontWeight:600}}>{p.name}</span>
+                    </div>
+                  </td>
+                  <td style={{...styles.td,color:"#888"}}>{p.played}</td>
+                  <td style={{...styles.td,color:"#00e676"}}>{p.wins}</td>
+                  <td style={{...styles.td,color:"#ff5252"}}>{p.losses}</td>
+                  <td style={{...styles.td,color:"#888",fontSize:12}}>{p.setsW}-{p.setsL}</td>
+                  <td style={{...styles.td,color:"#00d4ff",fontWeight:700,fontSize:16}}>{p.pts}</td>
+                </tr>
               ))}
-            </div>
+            </tbody>
+          </table>
+          <div style={{marginTop:12,padding:"10px 12px",background:"#0f0f1a",borderRadius:8,fontSize:12,color:"#666"}}>
+            Scoring: Win 3-0 = 3pts · Win 2-1 = 2pts · Loss 1-2 = 1pt · Loss 0-3 = 0pts
           </div>
-        )}
+        </div>
 
-        {/* ════════════════════════════ UPCOMING ══════════════════════════════ */}
-        {view==="upcoming"&&(
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>
-            <div style={{...card,border:`1px solid #f9731633`,padding:20}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}}>
-                <div>
-                  <div style={{fontSize:11,fontWeight:800,color:C.orange,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>Live Schedule</div>
-                  <h2 style={{fontSize:24,fontWeight:900,letterSpacing:"-0.03em"}}>Upcoming Games</h2>
-                  <p style={{fontSize:13,color:C.muted,marginTop:4}}>Season 4 — The Padelmaxxing</p>
-                </div>
-                {adminMode&&<button onClick={()=>setShowAddFixture(!showAddFixture)} style={{padding:"8px 18px",background:C.orange,border:"none",borderRadius:10,color:"#fff",fontWeight:800,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>+ Add Fixture</button>}
-              </div>
-            </div>
-            <div style={{display:"flex",flexDirection:"column",gap:16}}>
-              {s4schedule.filter(w=>w.matches.some(m=>!m.scores)).map(week=>(
-                <div key={week.week} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden"}}>
-                  <div style={{padding:"14px 20px",background:`${C.s4accent}0d`,borderBottom:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
-                    <span style={{fontWeight:900,fontSize:15,color:C.s4accent}}>⚡ Week {week.week}</span>
-                    <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-                      <span style={{fontSize:12,color:C.muted}}>📅 {week.date}</span>
-                      <span style={{fontSize:12,color:C.muted}}>🕐 18:30</span>
-                      <span style={{fontSize:12,color:C.muted}}>📍 Africa Padel KCC</span>
-                    </div>
+        {upcoming.length > 0 && (
+          <div style={styles.card}>
+            <div style={styles.h2}>Upcoming Matches</div>
+            {upcoming.map((m,i) => (
+              <div key={i} style={{...styles.matchCard, border:"1px solid #00d4ff22"}}>
+                <div style={{color:"#00d4ff",fontSize:11,fontWeight:700,marginBottom:8}}>WEEK {m.week} · {m.date}</div>
+                <div style={styles.scoreRow}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <Avatar name={m.p1} size={26}/><Avatar name={m.p2} size={26}/>
+                    <span style={{fontWeight:600,fontSize:14}}>{m.p1} & {m.p2}</span>
                   </div>
-                  {week.matches.filter(m=>!m.scores).map((m,mi)=>(
-                    <div key={mi} style={{padding:"20px",borderBottom:mi===0?`1px solid ${C.border}22`:"none"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:160}}>
-                          <div style={{display:"flex"}}>{[m.p1,m.p2].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-10:0,zIndex:ni}}><Avatar name={n} size={38}/></div>)}</div>
-                          <div>
-                            <div style={{fontWeight:900,fontSize:14}}>{m.p1} & {m.p2}</div>
-                            <div style={{fontSize:10,color:C.muted,marginTop:2}}>Court {mi+1}</div>
-                          </div>
-                        </div>
-                        <div style={{width:36,height:36,borderRadius:"50%",background:C.surface,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:C.muted,flexShrink:0}}>VS</div>
-                        <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:160}}>
-                          <div style={{display:"flex"}}>{[m.p3,m.p4].map((n,ni)=><div key={n} style={{marginLeft:ni>0?-10:0,zIndex:ni}}><Avatar name={n} size={38}/></div>)}</div>
-                          <div>
-                            <div style={{fontWeight:900,fontSize:14}}>{m.p3} & {m.p4}</div>
-                            <div style={{fontSize:10,color:C.muted,marginTop:2}}>Court {mi+1}</div>
-                          </div>
-                        </div>
-                        <span style={{fontSize:11,color:C.s4accent,background:`${C.s4accent}11`,border:`1px solid ${C.s4accent}33`,borderRadius:8,padding:"5px 14px",fontWeight:800,flexShrink:0}}>Upcoming</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ════════════════════════════ DPL S3 ═══════════════════════════════ */}
-        {view==="dpl"&&(
-          <div style={{display:"flex",flexDirection:"column",gap:20}}>
-            {/* Champions */}
-            <div style={{borderRadius:20,overflow:"hidden",position:"relative",border:`2px solid ${C.gold}`,background:C.card}}>
-              <div style={{position:"absolute",top:0,left:0,right:0,height:4,background:`linear-gradient(90deg,#ffd700,#fff,#ffd700)`}}/>
-              <div style={{padding:"28px 24px",textAlign:"center",position:"relative",zIndex:1}}>
-                <div style={{fontSize:44,marginBottom:8}}>🏆</div>
-                <div style={{fontSize:10,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:"0.2em",marginBottom:4}}>Season 3 Champions</div>
-                <h3 style={{fontSize:28,fontWeight:900,color:C.gold,marginBottom:4}}>🌀 Circumserve</h3>
-                <p style={{fontSize:13,color:C.muted}}>Byron & Keagan · Grand Final def. Overhead Casualties 6-4, 4-6, 6-3</p>
-              </div>
-            </div>
-            {/* S3 schedule */}
-            <div style={card}>
-              <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`}}>
-                <span style={{fontSize:11,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:"0.08em"}}>📅 Season 3 Full Results</span>
-              </div>
-              {S3_SCHEDULE.map((round,ri)=>(
-                <div key={ri} style={{borderBottom:`1px solid ${C.border}22`}}>
-                  <div style={{padding:"9px 16px",background:`${C.gold}08`,display:"flex",gap:10,alignItems:"center"}}>
-                    <span style={{fontSize:11,fontWeight:800,color:C.gold}}>{typeof round.round==="number"?`Round ${round.round}`:round.round==="SF"?"Semi-Finals":"Grand Final / Toilet Bowl"}</span>
-                    <span style={{fontSize:11,color:C.muted}}>· {round.date}</span>
+                  <div style={{color:"#444",fontWeight:800}}>VS</div>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{fontWeight:600,fontSize:14}}>{m.p3} & {m.p4}</span>
+                    <Avatar name={m.p3} size={26}/><Avatar name={m.p4} size={26}/>
                   </div>
-                  {round.matches.map((m,mi)=>{
-                    const t1=getT(m.t1),t2=getT(m.t2);
-                    if(!t1||!t2)return null;
-                    return(
-                      <div key={mi} style={{padding:"12px 16px",display:"flex",alignItems:"center",gap:10,borderBottom:mi<round.matches.length-1?`1px solid ${C.border}11`:"none",flexWrap:"wrap"}}>
-                        <div style={{flex:1,display:"flex",alignItems:"center",gap:8,minWidth:180}}>
-                          <span style={{fontSize:14}}>{t1.emoji}</span>
-                          <span style={{fontWeight:800,fontSize:12,color:t1.color}}>{t1.name}</span>
-                          <span style={{color:C.muted,fontSize:10,padding:"0 4px"}}>vs</span>
-                          <span style={{fontSize:14}}>{t2.emoji}</span>
-                          <span style={{fontWeight:800,fontSize:12,color:t2.color}}>{t2.name}</span>
-                        </div>
-                        {m.scores&&(
-                          <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
-                            {m.scores.map((sc,si)=><span key={si} style={{fontSize:12,fontWeight:800,background:C.surface,borderRadius:6,padding:"2px 8px"}}>{sc}</span>)}
-                            <span style={{fontSize:11,fontWeight:800,color:m.result[0]>m.result[1]?t1.color:t2.color,background:C.surface,borderRadius:8,padding:"3px 10px"}}>
-                              {m.result[0]>m.result[1]?`${t1.name} wins`:`${t2.name} wins`}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ════════════════════════════ SEASON 2 ══════════════════════════════ */}
-        {view==="s2"&&(
-          <div style={{display:"flex",flexDirection:"column",gap:20}}>
-            <div style={{...card,padding:20,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
-              <div>
-                <div style={{fontSize:11,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>Archive</div>
-                <h2 style={{fontSize:24,fontWeight:900,marginBottom:4}}>Season 2</h2>
-                <p style={{fontSize:13,color:C.muted}}>Individual format · 7 weeks · 14 matches</p>
-              </div>
-            </div>
-            {weekGroups(SEASON2).map(week=>(
-              <div key={week}>
-                <div style={{display:"flex",alignItems:"center",gap:10,margin:"4px 0 10px"}}>
-                  <div style={{flex:1,height:1,background:C.border}}/>
-                  <span style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase"}}>Week {week} · {SEASON2.find(m=>m.week===week)?.date}</span>
-                  <div style={{flex:1,height:1,background:C.border}}/>
-                </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
-                  {SEASON2.filter(m=>m.week===week).map((m,i)=><MatchCard key={i} m={m} accent={C.accent}/>)}
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* ════════════════════════════ SEASON 1 ══════════════════════════════ */}
-        {view==="s1"&&(
-          <div style={{display:"flex",flexDirection:"column",gap:20}}>
-            <div style={{...card,padding:20}}>
-              <div style={{fontSize:11,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>Archive</div>
-              <h2 style={{fontSize:24,fontWeight:900,marginBottom:4}}>Season 1</h2>
-              <p style={{fontSize:13,color:C.muted}}>Individual format · 11 weeks · 21 matches</p>
-            </div>
-            {weekGroups(SEASON1).map(week=>(
-              <div key={week}>
-                <div style={{display:"flex",alignItems:"center",gap:10,margin:"4px 0 10px"}}>
-                  <div style={{flex:1,height:1,background:C.border}}/>
-                  <span style={{fontSize:10,fontWeight:800,color:C.muted,textTransform:"uppercase"}}>Week {week} · {SEASON1.find(m=>m.week===week)?.date}</span>
-                  <div style={{flex:1,height:1,background:C.border}}/>
-                </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
-                  {SEASON1.filter(m=>m.week===week).map((m,i)=><MatchCard key={i} m={m} accent={C.gold}/>)}
-                </div>
+        <div style={styles.card}>
+          <div style={styles.h2}>Full Schedule</div>
+          {liveSchedule.map(w => (
+            <div key={w.week} style={{marginBottom:20}}>
+              <div style={{color:"#00d4ff",fontSize:13,fontWeight:700,marginBottom:10,display:"flex",alignItems:"center",gap:8}}>
+                <span style={{background:"#00d4ff22",borderRadius:6,padding:"3px 10px"}}>Week {w.week}</span>
+                <span style={{color:"#555",fontSize:12}}>{w.date}</span>
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* ════════════════════════════ PLAYERS ═══════════════════════════════ */}
-        {view==="players"&&!selPlayer&&(
-          <div style={{display:"flex",flexDirection:"column",gap:20}}>
-            <div style={{...card,padding:20}}>
-              <h2 style={{fontSize:24,fontWeight:900,marginBottom:4}}>Player Profiles</h2>
-              <p style={{fontSize:13,color:C.muted}}>All-time stats + Season 4 standings</p>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12}}>
-              {ALL_HIST_PLAYERS.map(p=>{
-                const hs=allStats[p]||{w:0,l:0,played:0};
-                const s4=s4stats.find(x=>x.name===p)||{pts:0,wins:0,losses:0,played:0};
-                const col=pColor(p);
-                return(
-                  <div key={p} onClick={()=>setSelPlayer(p)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,overflow:"hidden",cursor:"pointer"}}
-                    onMouseEnter={e=>e.currentTarget.style.borderColor=col}
-                    onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
-                    <div style={{height:70,background:`${col}0d`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <Avatar name={p} size={52} ring/>
+              {w.matches.map((m,mi) => (
+                <div key={mi} style={styles.matchCard}>
+                  <div style={styles.scoreRow}>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <Avatar name={m.p1} size={24}/><Avatar name={m.p2} size={24}/>
+                      <span style={{fontWeight:600,fontSize:13}}>{m.p1} & {m.p2}</span>
                     </div>
-                    <div style={{padding:"10px 12px"}}>
-                      <div style={{fontWeight:900,fontSize:13,marginBottom:8}}>{p}</div>
-                      <div style={{display:"flex",gap:5,marginBottom:6}}>
-                        <div style={{flex:1,background:"#00e67611",borderRadius:7,padding:"5px 3px",textAlign:"center"}}>
-                          <div style={{fontSize:14,fontWeight:900,color:C.green}}>{hs.w}</div>
-                          <div style={{fontSize:7,color:"#00e67688",fontWeight:800,textTransform:"uppercase"}}>All-W</div>
+                    <div>
+                      {m.scores ? (
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                          <div style={{display:"flex",gap:4}}>
+                            {m.scores.map((s,si)=><span key={si} style={styles.setScore}>{s}</span>)}
+                          </div>
+                          <span style={styles.badge(m.result[0]>m.result[1]?"#00d4ff":"#ff9800")}>
+                            {m.result[0]}-{m.result[1]}
+                          </span>
                         </div>
-                        <div style={{flex:1,background:"#ff525211",borderRadius:7,padding:"5px 3px",textAlign:"center"}}>
-                          <div style={{fontSize:14,fontWeight:900,color:C.red}}>{hs.l}</div>
-                          <div style={{fontSize:7,color:"#ff525288",fontWeight:800,textTransform:"uppercase"}}>All-L</div>
-                        </div>
-                        <div style={{flex:1,background:`${C.s4accent}11`,borderRadius:7,padding:"5px 3px",textAlign:"center"}}>
-                          <div style={{fontSize:14,fontWeight:900,color:C.s4accent}}>{s4.pts}</div>
-                          <div style={{fontSize:7,color:`${C.s4accent}88`,fontWeight:800,textTransform:"uppercase"}}>S4 Pts</div>
-                        </div>
-                      </div>
+                      ) : (
+                        <span style={{color:"#333",fontSize:12}}>TBD</span>
+                      )}
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontWeight:600,fontSize:13}}>{m.p3} & {m.p4}</span>
+                      <Avatar name={m.p3} size={24}/><Avatar name={m.p4} size={24}/>
                     </div>
                   </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderS3 = () => {
+    const t2 = getTeam("t2");
+    return (
+      <div>
+        <div style={{background:"linear-gradient(135deg,#ffd70022,#0a0a0f)",border:"1px solid #ffd70033",borderRadius:16,padding:24,marginBottom:24,textAlign:"center"}}>
+          <div style={{fontSize:48,marginBottom:8}}>🏆</div>
+          <div style={{color:"#ffd700",fontSize:24,fontWeight:800}}>Season 3 Champions</div>
+          <div style={{color:"#e0e0e0",fontSize:20,fontWeight:700,marginTop:4}}>{t2?.emoji} {t2?.name}</div>
+          <div style={{color:"#888",fontSize:15,marginTop:4}}>Byron & Keagan</div>
+        </div>
+
+        <div style={styles.card}>
+          <div style={styles.h2}>Final Standings</div>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>#</th>
+                <th style={styles.th}>Team</th>
+                <th style={styles.th}>P</th>
+                <th style={styles.th}>W</th>
+                <th style={styles.th}>L</th>
+                <th style={styles.th}>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teamStandings.map((t,i) => {
+                const team = getTeam(t.id);
+                return (
+                  <tr key={t.id} style={{background:i%2===0?"transparent":"#ffffff04"}}>
+                    <td style={styles.td}><span style={{fontWeight:700,color:i<3?["#ffd700","#c0c0c0","#cd7f32"][i]:"#555"}}>{i+1}</span></td>
+                    <td style={styles.td}>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <span>{t.emoji}</span>
+                        <span style={{fontWeight:700,color:t.color}}>{t.name}</span>
+                        <span style={{color:"#555",fontSize:12}}>{team?.p1} & {team?.p2}</span>
+                      </div>
+                    </td>
+                    <td style={{...styles.td,color:"#888"}}>{t.p}</td>
+                    <td style={{...styles.td,color:"#00e676"}}>{t.w}</td>
+                    <td style={{...styles.td,color:"#ff5252"}}>{t.l}</td>
+                    <td style={{...styles.td,color:"#ffd700",fontWeight:700}}>{t.pts}</td>
+                  </tr>
                 );
               })}
-            </div>
-          </div>
-        )}
+            </tbody>
+          </table>
+        </div>
 
-        {view==="players"&&selPlayer&&(()=>{
-          const p=selPlayer,col=pColor(p);
-          const hs=allStats[p]||{w:0,l:0,played:0};
-          const s4p=s4stats.find(x=>x.name===p)||{pts:0,wins:0,losses:0,played:0};
-          const allM=[...SEASON1,...SEASON2,...SEASON3_IND].filter(m=>[m.p1,m.p2,m.p3,m.p4].includes(p));
-          return(
-            <div style={{display:"flex",flexDirection:"column",gap:16}}>
-              <button onClick={()=>setSelPlayer(null)} style={{alignSelf:"flex-start",background:"transparent",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,padding:"6px 14px",cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>← Players</button>
-              <div style={{background:C.card,border:`1px solid ${col}44`,borderRadius:20,padding:24,position:"relative",overflow:"hidden"}}>
-                <div style={{position:"absolute",top:-60,right:-60,width:200,height:200,background:`radial-gradient(circle,${col}0d,transparent 70%)`,pointerEvents:"none"}}/>
-                <div style={{display:"flex",alignItems:"center",gap:20,marginBottom:20,flexWrap:"wrap"}}>
-                  <Avatar name={p} size={72} ring/>
+        <div style={styles.card}>
+          <div style={styles.h2}>Knockout Results</div>
+          {[...S3_SEMIS, S3_FINAL].map((m,i) => {
+            const t1 = getTeam(m.t1); const t2g = getTeam(m.t2);
+            const t1Won = m.score1 > m.score2;
+            return (
+              <div key={i} style={styles.matchCard}>
+                <div style={{color:i<2?"#ff9800":"#ffd700",fontSize:11,fontWeight:700,marginBottom:8}}>
+                  {i===0?"⚡ SEMI-FINAL 1":i===1?"⚡ SEMI-FINAL 2":"🏆 FINAL"}
+                </div>
+                <div style={styles.scoreRow}>
                   <div>
-                    <h2 style={{fontSize:28,fontWeight:900,color:col}}>{p}</h2>
-                    <div style={{fontSize:12,color:C.muted,marginTop:4}}>⚡ Season 4: {s4p.pts} pts · {s4p.wins}W {s4p.losses}L</div>
-                    <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>
-                      {PLAYTOMIC_LINKS[p]&&<a href={PLAYTOMIC_LINKS[p]} target="_blank" rel="noopener noreferrer" style={{fontSize:11,color:C.accent,background:`${C.accent}11`,border:`1px solid ${C.accent}33`,borderRadius:8,padding:"5px 12px",textDecoration:"none",fontWeight:700}}>🎾 Playtomic</a>}
+                    <span style={{fontWeight:700,color:t1Won?t1?.color:"#555"}}>{t1?.emoji} {t1?.name}</span>
+                    <div style={{color:"#555",fontSize:11}}>{t1?.p1} & {t1?.p2}</div>
+                  </div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontWeight:800,fontSize:20,color:"#e0e0e0"}}>{m.score1}–{m.score2}</div>
+                    <div style={{display:"flex",gap:3,marginTop:4}}>
+                      {m.sets.map((s,si)=><span key={si} style={styles.setScore}>{s.s1}-{s.s2}</span>)}
                     </div>
                   </div>
-                </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
-                  {[{l:"All-time W",v:hs.w,c:C.gold},{l:"All-time L",v:hs.l,c:C.red},{l:"S4 Pts",v:s4p.pts,c:C.s4accent},{l:"Win Rate",v:hs.played>0?`${Math.round(hs.w/hs.played*100)}%`:"—",c:C.green}].map(st=>(
-                    <div key={st.l} style={{background:`${st.c}0d`,border:`1px solid ${st.c}22`,borderRadius:12,padding:"12px 8px",textAlign:"center"}}>
-                      <div style={{fontSize:20,fontWeight:900,color:st.c}}>{st.v}</div>
-                      <div style={{fontSize:8,color:`${st.c}88`,fontWeight:800,textTransform:"uppercase",marginTop:2}}>{st.l}</div>
-                    </div>
-                  ))}
+                  <div style={{textAlign:"right"}}>
+                    <span style={{fontWeight:700,color:!t1Won?t2g?.color:"#555"}}>{t2g?.emoji} {t2g?.name}</span>
+                    <div style={{color:"#555",fontSize:11}}>{t2g?.p1} & {t2g?.p2}</div>
+                  </div>
                 </div>
               </div>
-              <div style={card}>
-                <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`}}>
-                  <span style={{fontSize:11,fontWeight:800,color:C.muted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Historical Match History</span>
-                </div>
-                {allM.slice(-8).reverse().map((m,i)=>{
-                  const onWin=[m.p1,m.p2].includes(p)?m.w===1:m.w===2;
-                  const partner=[m.p1,m.p2].includes(p)?[m.p1,m.p2].find(x=>x!==p):[m.p3,m.p4].find(x=>x!==p);
-                  const opp=[m.p1,m.p2].includes(p)?`${m.p3} & ${m.p4}`:`${m.p1} & ${m.p2}`;
-                  return(
-                    <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 16px",borderBottom:`1px solid ${C.border}22`,background:onWin?"#00e67606":"transparent"}}>
-                      <div style={{display:"flex",alignItems:"center",gap:10}}>
-                        <span style={{fontSize:14}}>{onWin?"✅":"❌"}</span>
-                        <div>
-                          <div style={{fontSize:12,fontWeight:700}}>w/ {partner} vs {opp}</div>
-                          <div style={{fontSize:10,color:C.muted}}>Wk {m.week} · {m.date}</div>
-                        </div>
-                      </div>
-                      <span style={{fontSize:11,fontWeight:800,color:onWin?C.green:C.red,background:onWin?"#00e67611":"#ff525211",borderRadius:8,padding:"3px 10px"}}>{onWin?"WIN":"LOSS"}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })(        )}
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
+  const renderHistory = () => (
+    <div>
+      <div style={{...styles.card,marginBottom:24}}>
+        <div style={styles.h2}>All-Time Individual Stats</div>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>#</th>
+              <th style={styles.th}>Player</th>
+              <th style={styles.th}>Played</th>
+              <th style={styles.th}>Won</th>
+              <th style={styles.th}>Lost</th>
+              <th style={styles.th}>Win%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {histStats.map((p,i) => {
+              const pct = p.played > 0 ? Math.round((p.wins/p.played)*100) : 0;
+              return (
+                <tr key={p.name} style={{background:i%2===0?"transparent":"#ffffff04"}}>
+                  <td style={styles.td}><span style={{color:"#555",fontWeight:700}}>{i+1}</span></td>
+                  <td style={styles.td}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <Avatar name={p.name} size={28}/>
+                      <span style={{fontWeight:600}}>{p.name}</span>
+                    </div>
+                  </td>
+                  <td style={{...styles.td,color:"#888"}}>{p.played}</td>
+                  <td style={{...styles.td,color:"#00e676",fontWeight:700}}>{p.wins}</td>
+                  <td style={{...styles.td,color:"#ff5252"}}>{p.losses}</td>
+                  <td style={styles.td}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <div style={{flex:1,background:"#1a1a2e",borderRadius:4,height:6,overflow:"hidden",minWidth:60}}>
+                        <div style={{width:`${pct}%`,height:"100%",background:pct>=60?"#00e676":pct>=40?"#ffd700":"#ff5252",borderRadius:4}}/>
+                      </div>
+                      <span style={{color:pct>=60?"#00e676":pct>=40?"#ffd700":"#ff5252",fontWeight:700,fontSize:13,minWidth:32}}>{pct}%</span>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const tabs = [
+    {id:"home", label:"🏠 Home"},
+    {id:"s4",   label:"🏓 Season 4"},
+    {id:"s3",   label:"🏆 Season 3"},
+    {id:"history", label:"📊 History"},
+    {id:"entry",   label:"📝 Score Entry"},
+  ];
+
+  return (
+    <div style={styles.app}>
+      <nav style={styles.nav}>
+        <div style={styles.navInner}>
+          {tabs.map(t => (
+            <button key={t.id} style={styles.tab(tab===t.id)} onClick={()=>setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </nav>
+      <main style={styles.main}>
+        {tab==="home"    && renderHome()}
+        {tab==="s4"      && renderS4()}
+        {tab==="s3"      && renderS3()}
+        {tab==="history" && renderHistory()}
+        {tab==="entry"   && <ScoreEntry liveSchedule={liveSchedule} />}
       </main>
     </div>
   );
